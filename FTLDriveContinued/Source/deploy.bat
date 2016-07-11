@@ -30,6 +30,4 @@ mkdir %d%
 :six
 
 copy bin\Debug\FTLDriveContinued.dll ..\GameData\FTLDriveContinued\Plugins
-
 xcopy /Y /s ..\GameData\FTLDriveContinued %H%\GameData\FTLDriveContinued
-pause
