@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
+using UnityEngine;
 
 namespace ScienceFoundry.FTL
 {
@@ -20,11 +20,11 @@ namespace ScienceFoundry.FTL
                 {
                     var vessels = FlightGlobals.Vessels.FindAll((v) => v != null).FindAll((v) => v != activeVessel);
                     var beacons = vessels.FindAll((v) => VesselHasAnActiveBeacon(v));
-
+                    Debug.Log("beacons.count: " + beacons.Count.ToString());
                     if (beacons.Count > 0)
                     {
                         var index = beacons.FindIndex((v) => v == current);
-
+                        Debug.Log("index: " + index.ToString());
                         if (index >= 0)
                             retValue = beacons[(index + 1) % beacons.Count];
                         else

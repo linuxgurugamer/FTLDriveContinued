@@ -106,8 +106,12 @@ namespace ScienceFoundry.FTL
         [KSPEvent(active = true, guiActive = true, guiActiveEditor = true, guiName = "Next Beacon")]
         public void NextBeacon()
         {
+            print ("NextBeacon");
             if (state == DriveState.IDLE)
             {
+                print ("DriveState.Idle");
+                if (navCom != null && navCom.Destination != null)
+                    print("navCom.Destination: " + navCom.Destination.ToString());
                 navCom.Destination = BeaconSelector.Next(navCom.Destination, FlightGlobals.ActiveVessel);
                 UpdateJumpStatistics();
             }
@@ -137,7 +141,7 @@ namespace ScienceFoundry.FTL
         private void UpdateJumpStatistics()
         {
             if (navCom.JumpPossible)
-            {
+            {               
                 beaconName = BeaconDescriptor(navCom.Destination);
                 requiredForce = String.Format("{0:0.0}iN", navCom.GetRequiredForce());
                 successProb = String.Format("{0:0.0}%", navCom.GetSuccesProbability(maxGeneratorForce)*100);

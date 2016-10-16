@@ -2,6 +2,7 @@
 //using System.Collections.Generic;
 //using System.Linq;
 //using System.Text;
+using System.Diagnostics;
 
 namespace ScienceFoundry.FTL
 {
@@ -14,7 +15,7 @@ namespace ScienceFoundry.FTL
         [KSPEvent(active = true, guiActive = true, guiActiveEditor = true, guiName = "Turn Beacon Off")]
         public void ToggleBeacon()
         {
-            beaconActivated = !beaconActivated;
+            beaconActivated = !beaconActivated;            
             UpdateEvents();
         }
 
