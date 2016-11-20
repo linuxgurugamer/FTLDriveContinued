@@ -9,17 +9,42 @@ namespace ScienceFoundry.FTL
     [KSPModule("FTL Drive")]
     public class FTLDriveModule : PartModule
     {
-        private enum DriveState
+        static List<FTLDriveModule> availableFtlDrives = new List<FTLDriveModule>();
+
+
+        [KSPField]
+        public string animationNames;
+
+        private string[] animStages = { };
+
+        // animationRampspeed is how quickly it gets up to speed.  1 meaning it gets to full speed (as defined by 
+        // the animSpeed and customAnimationSpeed) immediately, less than that will ramp up over time
+        [KSPField]
+        public float animationRampSpeed = 0.001f;
+        // When the mod starts, what speed to set the initial animSpeed to
+        [KSPField]
+        public float startAnimSpeed = 0f;
+        [KSPField]
+        public float customAnimationSpeed = 1f;
+
+        protected enum RampDirection { none, up, down };
+        protected RampDirection rampDirection = RampDirection.none;
+        private int animStage = 0;
+        private AnimationState[] containerStates;
+        private List<AnimationState> states = new List<AnimationState>();
+
+        protected enum DriveState
         {
             IDLE,
             STARTING,
             SPINNING,
-            JUMPING
+            JUMPING,
+            JUMPING_SECONDARY
         }
 
-        private DriveState state = DriveState.IDLE;
+        protected DriveState state = DriveState.IDLE;
         private double activationTime = 0;
-        private FXGroup driveSound;
+        protected FXGroup driveSound;
 
         /**
          * \brief Jump beacon name (displayed in the GUI)
@@ -54,7 +79,7 @@ namespace ScienceFoundry.FTL
         [KSPField(guiActive = true, guiActiveEditor = true, guiName = "Success probability", isPersistant = false)]
         private string successProb = "?";
 
-        [KSPField(guiActive=false, guiActiveEditor=false, isPersistant=true)]
+        [KSPField(guiActive = false, guiActiveEditor = false, isPersistant = true)]
         public double maxGeneratorForce = 2000;
 
         [KSPField(guiActive = false, guiActiveEditor = false, isPersistant = true)]
@@ -86,15 +111,34 @@ namespace ScienceFoundry.FTL
         [KSPEvent(active = true, guiActive = true, guiActiveEditor = true, guiName = "Jump")]
         public void Jump()
         {
-            if (navCom.JumpPossible)
+            DriveState curState = state;
+            foreach (var dm in availableFtlDrives)
             {
-                if (state == DriveState.IDLE)
+                if (navCom.JumpPossible || HighLogic.LoadedSceneIsEditor)
                 {
-                    ScreenMessages.PostScreenMessage("Spinning up FTL drive...", (float)maxChargeTime, ScreenMessageStyle.UPPER_CENTER);
-                    state = DriveState.STARTING;
-                    driveSound.audio.Play();
+                    if (curState == DriveState.IDLE)
+                    {
+                        if (dm == this)
+                            ScreenMessages.PostScreenMessage("Spinning up FTL drive...", (float)maxChargeTime, ScreenMessageStyle.UPPER_CENTER);
+                        dm.state = DriveState.STARTING;
+                        dm.rampDirection = RampDirection.up;
+                        dm.driveSound.audio.Play();
+                    }
+                    else
+                    {
+                        dm.rampDirection = RampDirection.down;
+                        dm.driveSound.audio.Stop();
+                        dm.Force = 0;
+                        dm.state = DriveState.IDLE;
+                    }
+                    dm.UpdateEvents();
                 }
             }
+        }
+
+        protected void UpdateEvents()
+        {
+            Events["Jump"].guiName = (state == DriveState.IDLE) ? "Jump" : "Emergency Stop Jump";
         }
 
         [KSPAction("Activate drive")]
@@ -106,10 +150,10 @@ namespace ScienceFoundry.FTL
         [KSPEvent(active = true, guiActive = true, guiActiveEditor = true, guiName = "Next Beacon")]
         public void NextBeacon()
         {
-            print ("NextBeacon");
+            print("NextBeacon");
             if (state == DriveState.IDLE)
             {
-                print ("DriveState.Idle");
+                print("DriveState.Idle");
                 if (navCom != null && navCom.Destination != null)
                     print("navCom.Destination: " + navCom.Destination.ToString());
                 navCom.Destination = BeaconSelector.Next(navCom.Destination, FlightGlobals.ActiveVessel);
@@ -141,10 +185,10 @@ namespace ScienceFoundry.FTL
         private void UpdateJumpStatistics()
         {
             if (navCom.JumpPossible)
-            {               
+            {
                 beaconName = BeaconDescriptor(navCom.Destination);
                 requiredForce = String.Format("{0:0.0}iN", navCom.GetRequiredForce());
-                successProb = String.Format("{0:0.0}%", navCom.GetSuccesProbability(maxGeneratorForce)*100);
+                successProb = String.Format("{0:0.0}%", navCom.GetSuccesProbability(maxGeneratorForce) * 100);
             }
             else
             {
@@ -158,7 +202,7 @@ namespace ScienceFoundry.FTL
         {
             string retValue = beacon.vesselName;
             var orbit = beacon.orbitDriver;
-            
+
             if ((orbit.referenceBody != null) && (beacon.orbit != null))
             {
                 var body = orbit.referenceBody;
@@ -180,6 +224,14 @@ namespace ScienceFoundry.FTL
             SoundManager.LoadSound("FTLDriveContinued/Sounds/drive_sound", "DriveSound");
             driveSound = new FXGroup("DriveSound");
             SoundManager.CreateFXSound(part, driveSound, "DriveSound", true, 50f);
+            animStages = animationNames.Split(',').Select(a => a.Trim()).ToArray();
+
+            SetUpAnimation(animStages[0], this.part, WrapMode.Loop);
+            UpdateEvents();
+
+            containerStates = states.ToArray();
+
+            availableFtlDrives.Add(this);
 
             try
             {
@@ -194,6 +246,32 @@ namespace ScienceFoundry.FTL
             }
 
             base.OnStart(state);
+        }
+
+
+        void OnDestroy()
+        {
+            availableFtlDrives.Remove(this);
+        }
+
+        public void SetUpAnimation(string animationName, Part part, WrapMode wrapMode)  //Thanks Majiir!
+        {
+            foreach (var animation in part.FindModelAnimators(animationName))
+            {
+                var animationState = animation[animationName];
+
+                animationState.speed = 0;
+                animationState.normalizedTime = 0f;
+                
+                animationState.enabled = true;
+                animationState.wrapMode = wrapMode;
+
+                states.Add(animationState);
+
+
+               //     animation.Play(animationName);
+            };
+            // return states.ToArray();
         }
 
         public override void OnLoad(ConfigNode node)
@@ -265,6 +343,82 @@ namespace ScienceFoundry.FTL
             base.OnFixedUpdate();
         }
 
+        private float ramp = 0;
+
+        public void LateUpdate()
+        {
+            if (!HighLogic.LoadedSceneIsFlight && !HighLogic.LoadedSceneIsEditor || rampDirection == RampDirection.none) return;
+
+            string activeAnim = animStages[animStage];
+            int curAnimStage = animStage;
+
+            foreach (var anim in part.FindModelAnimators(activeAnim))
+            {
+                if (anim != null)
+                {
+                    float origSpd = anim[activeAnim].speed;
+                    switch (rampDirection)
+                    {
+                        case RampDirection.up:
+                            if (ramp < 1f)
+                            {
+                                ramp += animationRampSpeed;
+                            }
+                            if (ramp > 1f)
+                            {
+                                ramp = 1f;
+                                animStage++;
+                                // rampDirection = RampDirection.none;
+                            }
+                            break;
+                        case RampDirection.down:
+                            if (ramp > 0)
+                            {
+                                ramp -= animationRampSpeed;
+                            }
+                            if (ramp < 0)
+                            {
+                                ramp = 0f;
+                                animStage--;
+                            }
+                            break;
+                    }
+                    
+                    anim[activeAnim].speed = customAnimationSpeed * ramp;
+                    
+                    if (ramp == 0)
+                    {
+                        if (animStage < 0)
+                        {
+                            animStage = 0;
+                            rampDirection = RampDirection.none;
+                        }
+                        else
+                        {
+                            ramp = 1;
+                        }
+                    }
+                    else if (ramp == 1)
+                    {
+                        if (animStage >= animStages.Length)
+                        {
+                            animStage = animStages.Length - 1;
+                            rampDirection = RampDirection.none;
+                        }
+                        else
+                        {
+                            ramp = 0;
+                        }
+                    }
+
+                    anim.Play(activeAnim);
+
+                }
+                else
+                    Debug.Log("anim is null");
+            }
+
+        }
         /**
          * \brief Check if the vessel is ready
          * \return true if the vessel is ready, otherwise false.
@@ -289,6 +443,25 @@ namespace ScienceFoundry.FTL
             base.OnUpdate();
         }
 
+        private double TotalForce()
+        {
+            double totalForce = 0;
+            foreach (var dm in availableFtlDrives)
+                totalForce += dm.Force;
+            return totalForce;
+        }
+
+        /// <summary>
+        /// Activates jumping on only one drive, to avoid multiple drives jumping at the same time
+        /// </summary>
+        void ActivateJumping()
+        {
+            foreach (var dm in availableFtlDrives)
+                dm.state = DriveState.JUMPING_SECONDARY;
+
+            state = DriveState.JUMPING;
+        }
+
         private void SpinningUpDrive(double deltaT)
         {
             var spinRate = maxGeneratorForce / maxChargeTime;
@@ -296,15 +469,17 @@ namespace ScienceFoundry.FTL
             if (activationTime >= maxChargeTime)
             {
                 Force += PowerDrive((maxChargeTime - (activationTime - deltaT)) * spinRate, deltaT);
-                state = DriveState.JUMPING;
+                if (state != DriveState.JUMPING_SECONDARY)
+                    ActivateJumping();
             }
             else
             {
                 Force += PowerDrive(deltaT * spinRate, deltaT);
 
-                if (Force > navCom.GetRequiredForce())
+                if (TotalForce() > navCom.GetRequiredForce())
                 {
-                    state = DriveState.JUMPING;
+                    if (state != DriveState.JUMPING_SECONDARY)
+                        ActivateJumping();
                 }
             }
         }
@@ -313,12 +488,12 @@ namespace ScienceFoundry.FTL
         {
             var demand = deltaT * requiredElectricalCharge;
             var delivered = part.RequestResource("ElectricCharge", demand);
-            return deltaF * (delivered/demand);
+            return deltaF * (delivered / demand);
         }
 
         private void ExecuteJump()
         {
-            if (navCom.Jump(Force))
+            if (navCom.Jump(TotalForce()))
             {
                 ScreenMessages.PostScreenMessage("Jump Completed!", 2f, ScreenMessageStyle.UPPER_CENTER);
             }
@@ -326,9 +501,13 @@ namespace ScienceFoundry.FTL
             {
                 ScreenMessages.PostScreenMessage("Jump failed!", 2f, ScreenMessageStyle.UPPER_CENTER);
             }
-            driveSound.audio.Stop();
-            Force = 0;
-            state = DriveState.IDLE;
+            foreach (var dm in availableFtlDrives)
+            {
+                dm.rampDirection = RampDirection.down;
+                dm.driveSound.audio.Stop();
+                dm.Force = 0;
+                dm.state = DriveState.IDLE;
+            }
         }
     }
 }

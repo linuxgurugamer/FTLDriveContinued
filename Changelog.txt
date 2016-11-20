@@ -1,0 +1,6 @@
+Textures changed to dds (thianks @Deimos Rast)
+
+0.1.3
+	New animated models supplied by forum user @steedcrugeon
+	Code added to control animations
+	Drives can now stack
