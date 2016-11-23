@@ -14,4 +14,3 @@ D:\Users\jbb\github\FTLDriveContinued\FTLDriveContinued\Source\bin\Debug\Mono.Se
 D:\Users\jbb\github\FTLDriveContinued\FTLDriveContinued\Source\bin\Debug\UnityEngine.xml
 D:\Users\jbb\github\FTLDriveContinued\FTLDriveContinued\Source\obj\Debug\FTLDriveContinued.dll
 D:\Users\jbb\github\FTLDriveContinued\FTLDriveContinued\Source\obj\Debug\FTLDriveContinued.pdb
-D:\Users\jbb\github\FTLDriveContinued\FTLDriveContinued\Source\obj\Debug\FTLDriveContinued.csprojResolveAssemblyReference.cache

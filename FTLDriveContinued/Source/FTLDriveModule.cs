@@ -507,6 +507,7 @@ namespace ScienceFoundry.FTL
                 dm.driveSound.audio.Stop();
                 dm.Force = 0;
                 dm.state = DriveState.IDLE;
+                dm.UpdateEvents();
             }
         }
     }
