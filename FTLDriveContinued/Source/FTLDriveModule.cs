@@ -67,6 +67,19 @@ namespace ScienceFoundry.FTL
                 generatedForce = value;
             }
         }
+        private double totalGeneratedForce = 0f;
+        private double TotalGeneratedForce
+        {
+            get
+            {
+                return totalGeneratedForce;
+            }
+            set
+            {
+                generatedForceStr = String.Format("{0:0.0}iN", value);
+                totalGeneratedForce = value;
+            }
+        }
 
         private double generatedForce = 0;
 
@@ -88,6 +101,15 @@ namespace ScienceFoundry.FTL
         [KSPField(guiActive = false, guiActiveEditor = false, isPersistant = true)]
         public double requiredElectricalCharge = 100;
 
+
+        double MaxCombinedGeneratorForce()
+        {
+            double d = 0;
+            
+            foreach (var dm in availableFtlDrives)
+                d += dm.maxGeneratorForce;
+            return d;
+        }
         /**
          * \brief Currently selected beacon.
          */
@@ -97,7 +119,7 @@ namespace ScienceFoundry.FTL
         {
             var str = new StringBuilder();
 
-            str.AppendFormat("Maximal force: {0:0.0}iN\n", maxGeneratorForce);
+            str.AppendFormat("Maximal force: {0:0.0}iN\n", MaxCombinedGeneratorForce());
             str.AppendFormat("Maximal charge time: {0:0.0}s\n\n", maxChargeTime);
             str.AppendFormat("Requires\n");
             str.AppendFormat("- Electric charge: {0:0.00}/s\n\n", requiredElectricalCharge);
@@ -188,7 +210,7 @@ namespace ScienceFoundry.FTL
             {
                 beaconName = BeaconDescriptor(navCom.Destination);
                 requiredForce = String.Format("{0:0.0}iN", navCom.GetRequiredForce());
-                successProb = String.Format("{0:0.0}%", navCom.GetSuccesProbability(maxGeneratorForce) * 100);
+                successProb = String.Format("{0:0.0}%", navCom.GetSuccesProbability(MaxCombinedGeneratorForce()) * 100);
             }
             else
             {
@@ -446,8 +468,21 @@ namespace ScienceFoundry.FTL
         private double TotalForce()
         {
             double totalForce = 0;
+            List<double> forceList = new List<double>();
             foreach (var dm in availableFtlDrives)
-                totalForce += dm.Force;
+                forceList.Add(dm.Force);
+            forceList = forceList.OrderByDescending(x => x).ToList();
+            int cnt = 0;
+            foreach (double d in forceList)
+            {
+                totalForce += d * Math.Pow(1.4, cnt);
+                Debug.Log("cnt: " + (1 - cnt).ToString() + "   TotalForce list: d: " + d.ToString() + "   adjusted force: d: " + (d * Math.Pow(1.4, cnt)).ToString());
+                cnt--;
+           }
+
+
+            //foreach (var dm in availableFtlDrives)
+            //    totalForce += dm.Force;
             return totalForce;
         }
 
@@ -469,13 +504,14 @@ namespace ScienceFoundry.FTL
             if (activationTime >= maxChargeTime)
             {
                 Force += PowerDrive((maxChargeTime - (activationTime - deltaT)) * spinRate, deltaT);
+                TotalGeneratedForce = TotalForce();
                 if (state != DriveState.JUMPING_SECONDARY)
                     ActivateJumping();
             }
             else
             {
                 Force += PowerDrive(deltaT * spinRate, deltaT);
-
+                TotalGeneratedForce = TotalForce();
                 if (TotalForce() > navCom.GetRequiredForce())
                 {
                     if (state != DriveState.JUMPING_SECONDARY)

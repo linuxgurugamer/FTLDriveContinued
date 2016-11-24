@@ -4,3 +4,25 @@ Textures changed to dds (thianks @Deimos Rast)
 	New animated models supplied by forum user @steedcrugeon
 	Code added to control animations
 	Drives can now stack
+
+0.1.4
+	Fixed UI issue
+
+0.1.5
+	Updated staking to be a descending exponential curve for additional drives.  It is now using the formula:
+		force * 1.4 ^ (-cnt)
+		Where force = generated force by drive
+		cnt = cnt of additional drive mode.
+		So this means that the following applies to additional drives:
+		Drive #		Multiplier
+			2		0.714285714
+			3		0.510204082
+			4		0.364431487	
+			5		0.260308205	
+			6		0.185934432	
+			7		0.132810309	
+			8		0.094864506
+			9		0.067760362
+			10		0.048400258
+
+	Updated display of generated force and chances to take multiple drives into account
