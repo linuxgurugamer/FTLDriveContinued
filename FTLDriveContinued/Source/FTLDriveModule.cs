@@ -476,7 +476,6 @@ namespace ScienceFoundry.FTL
             foreach (double d in forceList)
             {
                 totalForce += d * Math.Pow(1.4, cnt);
-                Debug.Log("cnt: " + (1 - cnt).ToString() + "   TotalForce list: d: " + d.ToString() + "   adjusted force: d: " + (d * Math.Pow(1.4, cnt)).ToString());
                 cnt--;
            }
 

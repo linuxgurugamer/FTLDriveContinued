@@ -9,7 +9,7 @@ Textures changed to dds (thianks @Deimos Rast)
 	Fixed UI issue
 
 0.1.5
-	Updated staking to be a descending exponential curve for additional drives.  It is now using the formula:
+	Updated stacking to be a descending exponential curve for additional drives.  It is now using the formula:
 		force * 1.4 ^ (-cnt)
 		Where force = generated force by drive
 		cnt = cnt of additional drive mode.
