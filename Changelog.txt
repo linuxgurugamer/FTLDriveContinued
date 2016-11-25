@@ -26,3 +26,9 @@ Textures changed to dds (thianks @Deimos Rast)
 			10		0.048400258
 
 	Updated display of generated force and chances to take multiple drives into account
+
+0.1.6
+	Fixed issues with config values not appearing properly in mod
+	Fixed issues with stacking drives not working properly
+	Fixed stacking scale
+	Pre-calculated exponents to save time

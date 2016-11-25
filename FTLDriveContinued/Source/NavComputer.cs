@@ -17,7 +17,7 @@ namespace ScienceFoundry.FTL
         {
            
             get
-            {           
+            {
                 if (Destination == null)
                     return false;
                 if (Source == null)
@@ -37,7 +37,7 @@ namespace ScienceFoundry.FTL
                       (Destination.situation == Vessel.Situations.FLYING)
                       ))
                 {
-                   // Debug.Log("JumpPossible, dest not: orbiting, escaping, flying");
+                    //Debug.Log("JumpPossible, dest not: orbiting, escaping, flying");
                     return false;
                 }
                 if (Source.GetOrbitDriver() == null)
@@ -57,7 +57,7 @@ namespace ScienceFoundry.FTL
                 }
                 if (Destination.GetOrbitDriver().referenceBody == null)
                 {
-                   // Debug.Log("JumpPossible, no dest orbit.referenceBody");
+                    //Debug.Log("JumpPossible, no dest orbit.referenceBody");
                     return false;
                 }
 
@@ -71,7 +71,7 @@ namespace ScienceFoundry.FTL
 
             if (JumpPossible)
             {
-                if (rndGenerator.NextDouble() < GetSuccesProbability(force))
+                if (rndGenerator.NextDouble() < GetSuccessProbability(force))
                 {
                     Source.Rendezvous(Destination);
                     retValue = true;
@@ -88,7 +88,7 @@ namespace ScienceFoundry.FTL
             return JumpPossible ? (Source.TunnelCreationRequirement() + Destination.TunnelCreationRequirement()) * Source.GetTotalMass() * 1e3 : Double.PositiveInfinity;
         }
 
-        public double GetSuccesProbability(double generatedPunchForce)
+        public double GetSuccessProbability(double generatedPunchForce)
         {
             double retValue = 0;
 

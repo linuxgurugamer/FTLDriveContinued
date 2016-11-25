@@ -174,10 +174,7 @@ namespace ScienceFoundry.FTL
                     if (curAnimStage < animStages.Length - 1)
                         anim[activeAnim].normalizedTime = ramp;
                     else
-                    {
-                        Debug.Log("ramp: " + ramp.ToString());
                         anim[activeAnim].speed = customAnimationSpeed * ramp;
-                    }
                     if (ramp == 0)
                     {
                         if (animStage < 0)
