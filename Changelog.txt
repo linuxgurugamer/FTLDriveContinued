@@ -32,3 +32,9 @@ Textures changed to dds (thianks @Deimos Rast)
 	Fixed issues with stacking drives not working properly
 	Fixed stacking scale
 	Pre-calculated exponents to save time
+
+0.1.6.1
+	Rebuild to delete old files
+
+0.1.6.2
+	Additional debugging statements added

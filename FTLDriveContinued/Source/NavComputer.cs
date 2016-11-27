@@ -13,9 +13,14 @@ namespace ScienceFoundry.FTL
         public Vessel Destination { get; set; }
         public Vessel Source { get; set; }
 
+        void DisplayJumpPossibleMsg(string str)
+        {
+            ScreenMessages.PostScreenMessage(str, 4f, ScreenMessageStyle.UPPER_CENTER);
+            Debug.Log(str);
+        }
+
         public bool JumpPossible
         {
-           
             get
             {
                 if (Destination == null)
@@ -29,7 +34,7 @@ namespace ScienceFoundry.FTL
                       (Source.situation == Vessel.Situations.ORBITING) ||
                       (Source.situation == Vessel.Situations.ESCAPING)))
                 {
-                    //Debug.Log("JumpPossible, source not: docked, flying, sub_orbital, orbiting, escaping");
+                    DisplayJumpPossibleMsg("JumpPossible, source not: docked, flying, sub_orbital, orbiting, escaping");
                     return false;
                 }
                 if (!((Destination.situation == Vessel.Situations.ORBITING) ||
@@ -37,32 +42,41 @@ namespace ScienceFoundry.FTL
                       (Destination.situation == Vessel.Situations.FLYING)
                       ))
                 {
-                    //Debug.Log("JumpPossible, dest not: orbiting, escaping, flying");
+                    DisplayJumpPossibleMsg("JumpPossible, destination not: orbiting, escaping, flying");
                     return false;
                 }
                 if (Source.GetOrbitDriver() == null)
                 {
-                    //Debug.Log("JumpPossible, no source.GetOrbitDriver");
+                    DisplayJumpPossibleMsg("JumpPossible, no source.GetOrbitDriver");
                     return false;
                 }
                 if (Destination.GetOrbitDriver() == null)
                 {
-                    //Debug.Log("JumpPossible, no dest.GetOrbitDriver");
+                    DisplayJumpPossibleMsg("JumpPossible, no dest.GetOrbitDriver");
                     return false;
                 }
                 if (Source.GetOrbitDriver().orbit.referenceBody == null)
                 {
-                    //Debug.Log("JumpPossible, no source orbit.referenceBody");
+                    DisplayJumpPossibleMsg("JumpPossible, no source orbit.referenceBody");
                     return false;
                 }
                 if (Destination.GetOrbitDriver().referenceBody == null)
                 {
-                    //Debug.Log("JumpPossible, no dest orbit.referenceBody");
+                    DisplayJumpPossibleMsg("JumpPossible, no dest orbit.referenceBody");
                     return false;
                 }
 
                 return true;
             }
+        }
+
+        /// <summary>
+        /// Adds a new entry to the flight events log.
+        /// Automatically adds the MET at the beginning of the log
+        /// </summary>
+        public static void FlightLog(string msg)
+        {
+            FlightLogger.eventLog.Add("[" + KSPUtil.PrintTimeStamp(FlightLogger.met) + "]: " + msg);
         }
 
         public bool Jump(double force)
@@ -71,13 +85,18 @@ namespace ScienceFoundry.FTL
 
             if (JumpPossible)
             {
-                if (rndGenerator.NextDouble() < GetSuccessProbability(force))
+                double r = rndGenerator.NextDouble();
+                Debug.Log("Jump, r: " + r.ToString() + "   SuccessProbability: " + GetSuccessProbability(force).ToString());
+                if (r < GetSuccessProbability(force))
                 {
                     Source.Rendezvous(Destination);
                     retValue = true;
                 }
                 else
+                {
+                    FlightLog("FTL Jump to " + Destination.ToString() + " failed, vessel destroyed");
                     Source.Kill();
+                }
             }
 
             return retValue;

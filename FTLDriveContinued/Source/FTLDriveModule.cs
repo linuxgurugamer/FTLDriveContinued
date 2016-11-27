@@ -508,10 +508,7 @@ namespace ScienceFoundry.FTL
                 if (cnt >= 10)
                     break;
            }
-
-
-            //foreach (var dm in availableFtlDrives)
-            //    totalForce += dm.Force;
+            
             return totalForce;
         }
 
@@ -549,7 +546,6 @@ namespace ScienceFoundry.FTL
                 double delta = deltaT;
                 if (activationTime > maxChargeTime)
                     delta = maxChargeTime - lastActivationTime;
-                //Debug.Log("spinRate: " + spinRate.ToString() + "   delta: " + delta.ToString() + "  ");
                 
                 Force += PowerDrive(delta * spinRate, delta);
                 TotalGeneratedForce = TotalForce();

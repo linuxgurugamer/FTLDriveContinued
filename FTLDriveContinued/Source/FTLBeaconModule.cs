@@ -48,9 +48,7 @@ namespace ScienceFoundry.FTL
                 if (beaconActivated)
                 {
                     UnityEngine.Debug.Log("Deactivating Beacon");
-
-
-
+                    
                     foreach (var animation in part.FindModelAnimators(animStages[i]))
                     {
                         //animation[animationName].speed = 0;
@@ -155,7 +153,6 @@ namespace ScienceFoundry.FTL
                             {
                                 ramp = 1f;
                                 animStage++;
-                                // rampDirection = RampDirection.none;
                             }
                             break;
                         case RampDirection.down:
