@@ -125,6 +125,7 @@ namespace ScienceFoundry.FTL
          * \param vessel the vessel for which position to calculate the force required to create a hole into hyperspace.
          * \return the force required in imaginary newtons [iN]
          */
+         
         public static double TunnelCreationRequirement(this Vessel self)
         {
             var orbit = self.GetOrbitDriver().orbit;

@@ -228,7 +228,61 @@ namespace ScienceFoundry.FTL
                     ScreenMessages.PostScreenMessage("NAVCOM Unavailable", 4f, ScreenMessageStyle.UPPER_CENTER);
                 }
             }
+        }
 
+        string ftlAnalysisReport = "";
+        bool display = false;
+        const int WIDTH = 250;
+        const int HEIGHT = 250;
+        Rect position = new Rect((Screen.width - WIDTH) / 2, (Screen.height - HEIGHT) / 2, WIDTH, HEIGHT);
+
+        [KSPEvent(active = true, guiActive = true, guiActiveEditor = false, guiName = "FTL Analysis")]
+        public void FTLAnalysis()
+        {
+            ftlAnalysisReport = "Beacon: " + beaconName + "\n";
+            ftlAnalysisReport += "Force required: " + requiredForce + "\n";
+            ftlAnalysisReport += "Success probability: " + successProb + "\n\n";
+
+            var orbit = navCom.Source.GetOrbitDriver().orbit;
+            ftlAnalysisReport += "Vessel orbiting around: " + orbit.referenceBody.name + "\n";
+            ftlAnalysisReport += "Vessel altitude: " + String.Format("{0:0.0}m", orbit.altitude) + "\n";
+            ftlAnalysisReport += orbit.referenceBody.name + "Radius: " + String.Format("{0:0.0}m", orbit.referenceBody.Radius) + "\n\n";
+
+            if (navCom.Destination != null)
+            {
+                orbit = navCom.Destination.GetOrbitDriver().orbit;
+                ftlAnalysisReport += "Beacon orbiting around " + navCom.Destination.GetOrbitDriver().orbit.referenceBody.name + "\n";
+                ftlAnalysisReport += "Beacon altitude: " + String.Format("{0:0.0}m", orbit.altitude) + "\n";
+                ftlAnalysisReport += orbit.referenceBody.name + "Radius: " + String.Format("{0:0.0}m", orbit.referenceBody.Radius) + "\n\n";
+            }
+            Debug.Log("FTL Analysis\n" + ftlAnalysisReport);
+            display = true;
+        }
+
+
+
+        void OnGUI()
+        {
+            if (!display)
+                return;
+
+            position = GUILayout.Window(523429, position, Display, "FTL Analysis Report");
+        }
+        void Display(int windowId)
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.TextField(ftlAnalysisReport);
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button("Ok", GUILayout.Height(30)))
+            {
+                display = false;
+            }
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+            GUI.DragWindow();
         }
 
         private void UpdateJumpStatistics()
@@ -245,6 +299,8 @@ namespace ScienceFoundry.FTL
                 requiredForce = "Inf";
                 successProb = "?";
             }
+            if (display)
+                FTLAnalysis();
         }
 
         private string BeaconDescriptor(Vessel beacon)
