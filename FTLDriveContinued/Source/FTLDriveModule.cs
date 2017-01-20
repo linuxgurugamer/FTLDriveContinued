@@ -114,15 +114,41 @@ namespace ScienceFoundry.FTL
         [KSPField(guiActive = false, guiActiveEditor = false, isPersistant = true)]
         public double requiredElectricalCharge = 100;
 
+        double lastActivationTime;
+        double maxCombinedGeneratorForce;
+        double totalRequiredElectricalCharge;
+        double absoluteMaxChargeTime;
 
         double MaxCombinedGeneratorForce()
         {
             double d = 0;
-            
+
             foreach (var dm in availableFtlDrives)
                 d += dm.maxGeneratorForce;
             return d;
         }
+
+        double TotalCombinedElectricalCharge()
+        {
+            double d = 0;
+
+            foreach (var dm in availableFtlDrives)
+                d += dm.requiredElectricalCharge;
+            return d;
+        }
+        /// <summary>
+        /// Return the largest charge time in the list
+        /// </summary>
+        /// <returns></returns>
+        double AbsoluteMaxChargeTime()
+        {
+            double d = 0;
+            foreach (var dm in availableFtlDrives)
+                if (dm.maxChargeTime > d)
+                    d = dm.maxChargeTime;
+            return d;
+        }
+
         /**
          * \brief Currently selected beacon.
          */
@@ -132,10 +158,10 @@ namespace ScienceFoundry.FTL
         {
             var str = new StringBuilder();
 
-            str.AppendFormat("Maximal force: {0:0.0}iN\n", maxGeneratorForce);
+            str.AppendFormat("Maximal force: {0:0.0}iN\n", MaxCombinedGeneratorForce());
             str.AppendFormat("Maximal charge time: {0:0.0}s\n\n", maxChargeTime);
             str.AppendFormat("Requires\n");
-            str.AppendFormat("- Electric charge: {0:0.00}/s\n\n", requiredElectricalCharge);
+            str.AppendFormat("- Electric charge: {0:0.00}/s\n\n", totalRequiredElectricalCharge);
             str.Append("Navigational computer\n");
             str.Append("- Required force\n");
             str.Append("- Success probability\n");
@@ -254,6 +280,10 @@ namespace ScienceFoundry.FTL
                 ftlAnalysisReport += "Beacon orbiting around " + navCom.Destination.GetOrbitDriver().orbit.referenceBody.name + "\n";
                 ftlAnalysisReport += "Beacon altitude: " + String.Format("{0:0.0}m", orbit.altitude) + "\n";
                 ftlAnalysisReport += orbit.referenceBody.name + "Radius: " + String.Format("{0:0.0}m", orbit.referenceBody.Radius) + "\n\n";
+
+                ftlAnalysisReport += "Max Charge Time: " + String.Format("{0:0.0}s", absoluteMaxChargeTime) + "\n";
+                ftlAnalysisReport += "Combined Generator Force: " + String.Format("{0:0.0}n", maxCombinedGeneratorForce) + "\n";
+                ftlAnalysisReport += "Total EC required: " + String.Format("{0:0.00}/s", totalRequiredElectricalCharge) + "\n";
             }
             Debug.Log("FTL Analysis\n" + ftlAnalysisReport);
             display = true;
@@ -285,13 +315,22 @@ namespace ScienceFoundry.FTL
             GUI.DragWindow();
         }
 
+        void recalcValues()
+        {
+            absoluteMaxRechargeTime = AbsoluteMaxChargeTime();
+            maxCombinedGeneratorForce = MaxCombinedGeneratorForce();
+            totalRequiredElectricalCharge = TotalCombinedElectricalCharge();
+            absoluteMaxChargeTime = AbsoluteMaxChargeTime();
+        }
         private void UpdateJumpStatistics()
         {
             if (navCom.JumpPossible)
             {
+                recalcValues();
+
                 beaconName = BeaconDescriptor(navCom.Destination);
                 requiredForce = String.Format("{0:0.0}iN", navCom.GetRequiredForce());
-                successProb = String.Format("{0:0.0}%", navCom.GetSuccessProbability(MaxCombinedGeneratorForce()) * 100);
+                successProb = String.Format("{0:0.0}%", navCom.GetSuccessProbability(maxCombinedGeneratorForce) * 100);
             }
             else
             {
@@ -300,7 +339,9 @@ namespace ScienceFoundry.FTL
                 successProb = "?";
             }
             if (display)
+            {
                 FTLAnalysis();
+            }
         }
 
         private string BeaconDescriptor(Vessel beacon)
@@ -419,7 +460,7 @@ namespace ScienceFoundry.FTL
                 lastUpdateTime = value;
             }
         }
-        double lastActivationTime;
+
         public void FixedUpdate()
         {
             if (IsVesselReady())
@@ -436,6 +477,8 @@ namespace ScienceFoundry.FTL
                     case DriveState.STARTING:
                         state = DriveState.SPINNING;
                         activationTime = 0;
+                        recalcValues();
+
                         break;
                     case DriveState.SPINNING:
                         SpinningUpDrive(deltaT);
@@ -568,6 +611,7 @@ namespace ScienceFoundry.FTL
             return totalForce;
         }
 
+        double absoluteMaxRechargeTime;
         /// <summary>
         /// Activates jumping on only one drive, to avoid multiple drives jumping at the same time
         /// </summary>
@@ -579,35 +623,24 @@ namespace ScienceFoundry.FTL
             state = DriveState.JUMPING;
         }
 
-        /// <summary>
-        /// Return the largest charge time in the list
-        /// </summary>
-        /// <returns></returns>
-        double AbsoluteMaxChargeTime()
-        {
-            double d = 0;
-            foreach (var dm in availableFtlDrives)
-                if (dm.maxChargeTime > d)
-                    d = dm.maxChargeTime;
-            return d;
-        }
+
 
         private void SpinningUpDrive(double deltaT)
         {
-            double d = AbsoluteMaxChargeTime();
-            double spinRate = maxGeneratorForce / maxChargeTime;
+           // double d = AbsoluteMaxChargeTime();
+            double spinRate = maxCombinedGeneratorForce / absoluteMaxRechargeTime;
             
-            if (lastActivationTime < AbsoluteMaxChargeTime())
+            if (lastActivationTime < absoluteMaxRechargeTime)
             {
                 double delta = deltaT;
-                if (activationTime > maxChargeTime)
-                    delta = maxChargeTime - lastActivationTime;
+                if (activationTime > absoluteMaxRechargeTime)
+                    delta = absoluteMaxRechargeTime - lastActivationTime;
                 
                 Force += PowerDrive(delta * spinRate, delta);
                 TotalGeneratedForce = TotalForce();
             }
 
-            if (activationTime >= AbsoluteMaxChargeTime())
+            if (activationTime >= absoluteMaxRechargeTime)
             {
                 if (state != DriveState.JUMPING_SECONDARY)
                     ActivateJumping();
@@ -625,7 +658,7 @@ namespace ScienceFoundry.FTL
 
         private double PowerDrive(double deltaF, double deltaT)
         {
-            var demand = deltaT * requiredElectricalCharge;
+            var demand = deltaT * totalRequiredElectricalCharge; // requiredElectricalCharge;
             var delivered = part.RequestResource("ElectricCharge", demand);
             //Debug.Log("PowerDrive:  deltaT: " + deltaT.ToString() + "  demand: " + demand.ToString() + "   delivered: " + delivered.ToString() + "  deltaF: " + deltaF.ToString());
             return deltaF * (delivered / demand);

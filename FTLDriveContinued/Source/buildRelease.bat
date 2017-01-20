@@ -22,8 +22,28 @@ set HOMEDRIVE=%HOMEDIR:~0,2%
 )
 
 
+
+set VERSIONFILE=FTLDriveContinued.version
+rem The following requires the JQ program, available here: https://stedolan.github.io/jq/download/
+c:\local\jq-win64  ".VERSION.MAJOR" %VERSIONFILE% >tmpfile
+set /P major=<tmpfile
+
+c:\local\jq-win64  ".VERSION.MINOR"  %VERSIONFILE% >tmpfile
+set /P minor=<tmpfile
+
+c:\local\jq-win64  ".VERSION.PATCH"  %VERSIONFILE% >tmpfile
+set /P patch=<tmpfile
+
+c:\local\jq-win64  ".VERSION.BUILD"  %VERSIONFILE% >tmpfile
+set /P build=<tmpfile
+del tmpfile
+set VERSION=%major%.%minor%.%patch%
+if "%build%" NEQ "0"  set VERSION=%VERSION%.%build%
+
 type FTLDriveContinued.version
-set /p VERSION= "Enter version: "
+
+echo Version:  %VERSION%
+pause
 
 mkdir %HOMEDIR%\install\GameData\FTLDriveContinued
 
