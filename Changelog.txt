@@ -41,3 +41,10 @@ Textures changed to dds (thianks @Deimos Rast)
 
 0.1.7.0
 	Added FTL Analysis window
+
+0.1.8.0
+	Added more data to FTL Analysis window
+	Fixed problem with multiple drives not being combined properly
+
+0.1.8.1
+	Fixed the display of power in the editore, thanks @Warezcrawler

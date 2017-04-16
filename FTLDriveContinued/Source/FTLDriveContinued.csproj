@@ -47,7 +47,6 @@
   <ItemGroup>
     <None Include="buildRelease.bat" />
     <None Include="deploy.bat" />
-    <None Include="FTLDriveContinued.version" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="AssemblyFileVersion.tt">

@@ -8,6 +8,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NewFolder1", "NewFolder1", "{ED6DC0E4-7BD9-4EEE-BB27-5065083E8952}"
 	ProjectSection(SolutionItems) = preProject
 		..\..\Changelog.txt = ..\..\Changelog.txt
+		FTLDriveContinued.version = FTLDriveContinued.version
 	EndProjectSection
 EndProject
 Global

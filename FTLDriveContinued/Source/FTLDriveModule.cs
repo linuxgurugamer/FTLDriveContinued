@@ -158,7 +158,7 @@ namespace ScienceFoundry.FTL
         {
             var str = new StringBuilder();
 
-            str.AppendFormat("Maximal force: {0:0.0}iN\n", MaxCombinedGeneratorForce());
+            str.AppendFormat("Maximal force: {0:0.0}iN\n", maxGeneratorForce); // MaxCombinedGeneratorForce());
             str.AppendFormat("Maximal charge time: {0:0.0}s\n\n", maxChargeTime);
             str.AppendFormat("Requires\n");
             str.AppendFormat("- Electric charge: {0:0.00}/s\n\n", totalRequiredElectricalCharge);
