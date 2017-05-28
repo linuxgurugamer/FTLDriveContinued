@@ -5,10 +5,13 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FTLDriveContinued", "FTLDriveContinued.csproj", "{F5B8E18D-7662-4FE4-BC7B-9CD2E9ECE244}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NewFolder1", "NewFolder1", "{ED6DC0E4-7BD9-4EEE-BB27-5065083E8952}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionFolder", "SolutionFolder", "{ED6DC0E4-7BD9-4EEE-BB27-5065083E8952}"
 	ProjectSection(SolutionItems) = preProject
+		buildRelease.bat = buildRelease.bat
 		..\..\Changelog.txt = ..\..\Changelog.txt
+		deploy.bat = deploy.bat
 		FTLDriveContinued.version = FTLDriveContinued.version
+		LICENSE.txt = LICENSE.txt
 	EndProjectSection
 EndProject
 Global
