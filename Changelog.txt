@@ -47,4 +47,7 @@ Textures changed to dds (thianks @Deimos Rast)
 	Fixed problem with multiple drives not being combined properly
 
 0.1.8.1
-	Fixed the display of power in the editore, thanks @Warezcrawler
+	Fixed the display of power in the editor, thanks @Warezcrawler
+
+0.1.8.2
+	Added RSS patch, thanks @Jimbodiah

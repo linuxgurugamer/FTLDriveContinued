@@ -1,29 +1,28 @@
 ﻿
 @echo off
-set DEFHOMEDRIVE=d:
-set DEFHOMEDIR=%DEFHOMEDRIVE%%HOMEPATH%
-set HOMEDIR=
-set HOMEDRIVE=%CD:~0,2%
+
+rem Set variables here
+
+set GAMEDIR=FTLDriveContinued
+set LICENSE=License.txt
+set README=..\..\README.md
 
 set RELEASEDIR=d:\Users\jbb\release
 set ZIP="c:\Program Files\7-zip\7z.exe"
-echo Default homedir: %DEFHOMEDIR%
 
-rem set /p HOMEDIR= "Enter Home directory, or <CR> for default: "
+rem Copy files to GameData locations
 
-if "%HOMEDIR%" == "" (
-set HOMEDIR=%DEFHOMEDIR%
-)
-echo %HOMEDIR%
+copy /Y "%1%2" "..\GameData\%GAMEDIR%\Plugins"
+copy /Y %GAMEDIR%.version ..\GameData\%GAMEDIR%
+copy /Y ..\..\..\MiniAVC.dll ..\GameData\%GAMEDIR%
 
-SET _test=%HOMEDIR:~1,1%
-if "%_test%" == ":" (
-set HOMEDRIVE=%HOMEDIR:~0,2%
-)
+if "%LICENSE%" NEQ "" copy /y  %LICENSE% ..\GameData\%GAMEDIR%
+if "%README%" NEQ "" copy /Y %README% ..\GameData\%GAMEDIR%
+
+rem Get Version info
 
 
-
-set VERSIONFILE=FTLDriveContinued.version
+set VERSIONFILE=%GAMEDIR%.version
 rem The following requires the JQ program, available here: https://stedolan.github.io/jq/download/
 c:\local\jq-win64  ".VERSION.MAJOR" %VERSIONFILE% >tmpfile
 set /P major=<tmpfile
@@ -40,32 +39,13 @@ del tmpfile
 set VERSION=%major%.%minor%.%patch%
 if "%build%" NEQ "0"  set VERSION=%VERSION%.%build%
 
-type FTLDriveContinued.version
-
 echo Version:  %VERSION%
-pause
 
-mkdir %HOMEDIR%\install\GameData\FTLDriveContinued
+rem Build the zip FILE
+cd ..
 
-del /Q %HOMEDIR%\install\GameData\FTLDriveContinued
-del /Q %HOMEDIR%\install\GameData\FTLDriveContinued\Parts
-del /Q %HOMEDIR%\install\GameData\FTLDriveContinued\Plugins
-del /Q %HOMEDIR%\install\GameData\FTLDriveContinued\Sounds
-
-copy bin\Debug\FTLDriveContinued.dll ..\GameData\FTLDriveContinued\Plugins
-xcopy /Y /s ..\GameData\FTLDriveContinued %HOMEDIR%\install\GameData\FTLDriveContinued
-
-
-copy /Y "FTLDriveContinued.version" "%HOMEDIR%\install\GameData\FTLDriveContinued"
-
-copy /Y "License.txt" "%HOMEDIR%\install\GameData\FTLDriveContinued"
-copy /Y "..\README.md" "%HOMEDIR%\install\GameData\FTLDriveContinued"
-copy /Y MiniAVC.dll  "%HOMEDIR%\install\GameData\FTLDriveContinued"
-
-
-%HOMEDRIVE%
-cd %HOMEDIR%\install
-
-set FILE="%RELEASEDIR%\FTLDriveContinued-%VERSION%.zip"
+set FILE="%RELEASEDIR%\%GAMEDIR%-%VERSION%.zip"
 IF EXIST %FILE% del /F %FILE%
-%ZIP% a -tzip %FILE% Gamedata\FTLDriveContinued
+%ZIP% a -tzip %FILE% GameData
+
+pause
