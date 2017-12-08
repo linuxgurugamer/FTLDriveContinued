@@ -10,7 +10,7 @@ namespace ScienceFoundry.FTL
     {
         static SoundManager instance;
 
-        Dictionary<string, AudioClip> Sounds;
+        Dictionary<string, AudioClip> Sounds = new Dictionary<string, AudioClip>();
 
         public static bool IsInitialized
         {
@@ -18,11 +18,6 @@ namespace ScienceFoundry.FTL
             {
                 return (instance != null);
             }
-        }
-
-        SoundManager()
-        {
-            Sounds = new Dictionary<string, AudioClip>();
         }
 
         public static void Initialize()
@@ -41,9 +36,7 @@ namespace ScienceFoundry.FTL
                 foreach (KeyValuePair<string, AudioClip> pair in instance.Sounds)
                 {
                     if (pair.Key == soundName)
-                    {
                         return;
-                    }
                 }
 
                 if (GameDatabase.Instance.ExistsAudioClip(filePath))
