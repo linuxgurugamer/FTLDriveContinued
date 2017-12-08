@@ -120,20 +120,12 @@ namespace ScienceFoundry.FTL
 
         double MaxCombinedGeneratorForce()
         {
-            double d = 0;
-
-            foreach (var dm in availableFtlDrives)
-                d += dm.maxGeneratorForce;
-            return d;
+            return availableFtlDrives.Select(drv => drv.maxGeneratorForce).Sum()
         }
 
         double TotalCombinedElectricalCharge()
         {
-            double d = 0;
-
-            foreach (var dm in availableFtlDrives)
-                d += dm.requiredElectricalCharge;
-            return d;
+            return availableFtlDrives.Select(drv => drv.requiredElectricalCharge).Sum()
         }
 
         /// <summary>
@@ -142,11 +134,7 @@ namespace ScienceFoundry.FTL
         /// <returns></returns>
         double AbsoluteMaxChargeTime()
         {
-            double d = 0;
-            foreach (var dm in availableFtlDrives)
-                if (dm.maxChargeTime > d)
-                    d = dm.maxChargeTime;
-            return d;
+            return availableFtlDrives.Select(drv => drv.maxChargeTime).DefaultIfEmpty().Max()
         }
 
         /**
@@ -582,21 +570,7 @@ namespace ScienceFoundry.FTL
         
         private double TotalForce()
         {
-            double totalForce = 0;
-            List<double> forceList = new List<double>();
-            foreach (var dm in availableFtlDrives)
-                forceList.Add(dm.Force);
-            forceList = forceList.OrderByDescending(x => x).ToList();
-            int cnt = 0;
-            foreach (double d in forceList)
-            {
-                totalForce += d * MathPow[cnt];
-                cnt++;
-                if (cnt >= 10)
-                    break;
-           }
-            
-            return totalForce;
+            return availableFtlDrives.OrderByDescending(drv => drv.Force).Take(10).Select((f,i) => f * MathPow[i]).Sum()
         }
 
         double absoluteMaxRechargeTime;
