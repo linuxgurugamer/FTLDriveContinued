@@ -81,16 +81,15 @@ namespace ScienceFoundry.FTL
 
         public bool Jump(double force)
         {
-            bool retValue = false;
-
             if (JumpPossible)
             {
                 double r = rndGenerator.NextDouble();
                 Debug.Log("Jump, r: " + r.ToString() + "   SuccessProbability: " + GetSuccessProbability(force).ToString());
+
                 if (r < GetSuccessProbability(force))
                 {
                     Source.Rendezvous(Destination);
-                    retValue = true;
+                    return true;
                 }
                 else
                 {
@@ -99,33 +98,17 @@ namespace ScienceFoundry.FTL
                 }
             }
 
-            return retValue;
+            return false;
         }
 
         public double GetRequiredForce()
         {
-            return JumpPossible ? (Source.TunnelCreationRequirement() + Destination.TunnelCreationRequirement()) * Source.GetTotalMass() * 1e3 : Double.PositiveInfinity;
+            return JumpPossible ? (Source.TunnelCreationRequirement() + Destination.TunnelCreationRequirement()) * Source.GetTotalMass() * 1000d : Double.PositiveInfinity;
         }
 
         public double GetSuccessProbability(double generatedPunchForce)
         {
-            double retValue = 0;
-
-            if (JumpPossible)
-            {
-                var forceRequired = GetRequiredForce();
-
-                if (forceRequired > generatedPunchForce)
-                {
-                    retValue = generatedPunchForce / forceRequired;
-                }
-                else
-                {
-                    retValue = 1;
-                }
-            }
-
-            return retValue;
+            return Math.Min(1, Math.Max(0, generatedPunchForce / GetRequiredForce()))
         }
 
     }
