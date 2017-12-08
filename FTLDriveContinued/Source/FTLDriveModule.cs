@@ -144,17 +144,20 @@ namespace ScienceFoundry.FTL
 
         public override string GetInfo()
         {
-            var str = new StringBuilder();
+            var sb = new StringBuilder();
 
-            str.AppendFormat("Maximal force: {0:0.0}iN\n", maxGeneratorForce); // MaxCombinedGeneratorForce());
-            str.AppendFormat("Maximal charge time: {0:0.0}s\n\n", maxChargeTime);
-            str.AppendFormat("Requires\n");
-            str.AppendFormat("- Electric charge: {0:0.00}/s\n\n", totalRequiredElectricalCharge);
-            str.Append("Navigational computer\n");
-            str.Append("- Required force\n");
-            str.Append("- Success probability\n");
+            sb.AppendFormat("Maximum force: {0:0.0}iN\n", maxGeneratorForce);
+            sb.AppendFormat("Maximum charge time: {0:0.0}s\n", maxChargeTime);
+            sb.AppendFormat("\n");
+            sb.AppendFormat("Requires\n");
+            sb.AppendFormat("- Electric charge: {0:0.0}/s\n", totalRequiredElectricalCharge);
+            sb.AppendFormat("\n");
+            sb.Append("Navigational computer\n");
+            sb.Append("- Required force\n");
+            sb.Append("- Required electricity\n");
+            sb.Append("- Success probability\n");
 
-            return str.ToString();
+            return sb.ToString();
         }
 
         bool driveActive = true;
