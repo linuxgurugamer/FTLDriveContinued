@@ -16,9 +16,9 @@ namespace ScienceFoundry.FTL
             if (MathPow == null)
             {
                 MathPow = new double[10];
-                for (double cnt = 0; cnt < 10f; cnt++)
+                for (int cnt = 0; cnt < 10; cnt++)
                 {
-                    MathPow[(int)cnt] = Math.Pow(1.4, -1 * cnt);
+                    MathPow[cnt] = Math.Pow(1.4, -cnt);
                 }
             }
         }
