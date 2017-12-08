@@ -25,7 +25,6 @@ namespace ScienceFoundry.FTL
             if (instance == null)
             {
                 instance = new SoundManager();
-                //Logger.DebugLog("Sound Manager STARTED.");
             }
         }
 
@@ -42,11 +41,6 @@ namespace ScienceFoundry.FTL
                 if (GameDatabase.Instance.ExistsAudioClip(filePath))
                 {
                     instance.Sounds.Add(soundName, GameDatabase.Instance.GetAudioClip(filePath));
-                    //Logger.DebugLog("Loaded: " + soundName);
-                }
-                else
-                {
-                    //Logger.DebugError("ERROR: Sound \"" + soundName + "\" not found in the database!");
                 }
             }
             else
@@ -64,7 +58,6 @@ namespace ScienceFoundry.FTL
             }
             catch
             {
-                //Logger.DebugError("ERROR: AudioClip \"" + soundName + "\" not found! Ensure it is being properly loaded.");
                 return null;
             }
         }
