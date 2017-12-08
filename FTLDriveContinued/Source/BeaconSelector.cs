@@ -12,38 +12,27 @@ namespace ScienceFoundry.FTL
 
         public static Vessel Next(Vessel current, Vessel activeVessel)
         {
-            Vessel retValue = null;
-
             if (activeVessel != null)
             {
-                if((FlightGlobals.fetch != null) && (FlightGlobals.Vessels != null))
+                if(FlightGlobals.fetch != null && FlightGlobals.Vessels != null)
                 {
-                    var vessels = FlightGlobals.Vessels.FindAll((v) => v != null).FindAll((v) => v != activeVessel);
-                    var beacons = vessels.FindAll((v) => VesselHasAnActiveBeacon(v));
+                    var vessels = FlightGlobals.Vessels.FindAll(v => v != null && v != activeVessel);
+                    var beacons = vessels.FindAll(v => VesselHasAnActiveBeacon(v));
+
                     if (beacons.Count > 0)
                     {
-                        var index = beacons.FindIndex((v) => v == current);
-                        if (index >= 0)
-                            retValue = beacons[(index + 1) % beacons.Count];
-                        else
-                            retValue = beacons[0];
+                        int index = beacons.FindIndex(v => v == current);
+                        return index >= 0 ? beacons[(index + 1) % beacons.Count] : beacons[0];
                     }
                 }
             }
 
-            return retValue;
+            return null;
         }
 
         private static bool VesselHasAnActiveBeacon(Vessel v)
         {
-            bool retValue = false;
-
-            if (v.loaded)
-                retValue = CheckLoadedVesselForABeacon(v);
-            else
-                retValue = CheckUnloadedVesselForABeacon(v);
-
-            return retValue;
+            return v.loaded ? CheckLoadedVesselForABeacon(v) : CheckUnloadedVesselForABeacon(v);
         }
 
         private static bool CheckUnloadedVesselForABeacon(Vessel v)
@@ -59,8 +48,7 @@ namespace ScienceFoundry.FTL
                     {
                         try
                         {
-                            if (!retValue)
-                                retValue = Convert.ToBoolean(m.moduleValues.GetValue("beaconActivated"));
+                            retValue |= Convert.ToBoolean(m.moduleValues.GetValue("beaconActivated"));
                         }
                         catch (Exception e)
                         {
@@ -90,8 +78,7 @@ namespace ScienceFoundry.FTL
 
                             if (beacon != null)
                             {
-                                if (!retValue)
-                                    retValue = beacon.IsBeaconActive();
+                                retValue |= beacon.IsBeaconActive();
                             }
                             else
                                 UnityEngine.Debug.Log("Not as expected a FTLBeaconModule");
