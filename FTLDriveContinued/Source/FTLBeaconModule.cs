@@ -29,13 +29,10 @@ namespace ScienceFoundry.FTL
         [KSPField]
         public float customAnimationSpeed = 1f;
 
-
         private enum RampDirection { none, up, down };
         private RampDirection rampDirection = RampDirection.none;
-
         private AnimationState[] containerStates;
         private List<AnimationState> states = new List<AnimationState>();
-
         private int animStage = 0;
 
         [KSPEvent(active = true, guiActive = true, guiActiveEditor = true, guiName = "Turn Beacon On")]
@@ -44,7 +41,6 @@ namespace ScienceFoundry.FTL
             //changed = true;
             for (int i = 0; i < animStages.Length; i++)
             {
-
                 if (beaconActivated)
                 {
                     UnityEngine.Debug.Log("Deactivating Beacon");
@@ -56,7 +52,6 @@ namespace ScienceFoundry.FTL
                         rampDirection = RampDirection.down;
                         // animation.Play(animationName);
                     }
-
                 }
                 else
                 {
@@ -108,15 +103,14 @@ namespace ScienceFoundry.FTL
                 }
                 animationState.enabled = true;
                 animationState.wrapMode = wrapMode;
-               // animation.Blend(animationName);
+                // animation.Blend(animationName);
                 states.Add(animationState);
 
-               if (beaconActivated)
+                if (beaconActivated)
                     animation.Play(animationName);
             };
-           // return states.ToArray();
+            // return states.ToArray();
         }
-
 
         private void UpdateEvents()
         {
@@ -198,12 +192,10 @@ namespace ScienceFoundry.FTL
                     }
 
                     anim.Play(activeAnim);
-
                 }
                 else
                     Debug.Log("anim is null");
             }
-
         }
 
     }

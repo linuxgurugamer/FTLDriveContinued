@@ -118,19 +118,16 @@ namespace ScienceFoundry.FTL
             return new Orbit(inc, e, sma, lan, w, mEp, epoch, body);
         }
 
-
         /**
          * \brief Calculate the required force for creating hole into hyperspace
          * 
          * \param vessel the vessel for which position to calculate the force required to create a hole into hyperspace.
          * \return the force required in imaginary newtons [iN]
          */
-         
         public static double TunnelCreationRequirement(this Vessel self)
         {
             var orbit = self.GetOrbitDriver().orbit;
-            return CalculateGravitation(orbit.referenceBody,
-                                        orbit.altitude + orbit.referenceBody.Radius);
+            return CalculateGravitation(orbit.referenceBody, orbit.altitude + orbit.referenceBody.Radius);
         }
 
         private static double CalculateGravitation(CelestialBody body, double altitude)
@@ -148,5 +145,6 @@ namespace ScienceFoundry.FTL
 
             return retValue;
         }
+
     }
 }

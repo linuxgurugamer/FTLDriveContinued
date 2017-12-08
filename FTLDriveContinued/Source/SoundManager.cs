@@ -95,5 +95,6 @@ namespace ScienceFoundry.FTL
             group.audio.playOnAwake = false;
             group.audio.clip = GetSound(defaultSound);
         }
+
     }
 }

@@ -28,7 +28,6 @@ namespace ScienceFoundry.FTL
                         else
                             retValue = beacons[0];
                     }
-                    
                 }
             }
 
@@ -102,5 +101,6 @@ namespace ScienceFoundry.FTL
             }
             return retValue;
         }
+
     }
 }

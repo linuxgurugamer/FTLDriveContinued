@@ -9,8 +9,19 @@ namespace ScienceFoundry.FTL
     [KSPModule("FTL Drive")]
     public class FTLDriveModule : PartModule
     {
-        static List<FTLDriveModule> availableFtlDrives = new List<FTLDriveModule>();
         static double[] MathPow = null;
+
+        private void Start()
+        {
+            if (MathPow == null)
+            {
+                MathPow = new double[10];
+                for (double cnt = 0; cnt < 10f; cnt++)
+                {
+                    MathPow[(int)cnt] = Math.Pow(1.4, -1 * cnt);
+                }
+            }
+        }
 
         [KSPField]
         public string animationNames;
@@ -33,19 +44,6 @@ namespace ScienceFoundry.FTL
         private AnimationState[] containerStates;
         private List<AnimationState> states = new List<AnimationState>();
 
-        private void Start()
-        {
-            if (MathPow == null)
-            {
-                MathPow = new double[10];
-                for (double cnt = 0; cnt < 10f; cnt++)
-                {
-                    MathPow[(int)cnt] = Math.Pow(1.4, -1 * cnt);
-                }
-            }
-        }
-
-
         protected enum DriveState
         {
             IDLE,
@@ -55,6 +53,7 @@ namespace ScienceFoundry.FTL
             JUMPING_SECONDARY
         }
 
+        static List<FTLDriveModule> availableFtlDrives = new List<FTLDriveModule>();
         protected DriveState state = DriveState.IDLE;
         private double activationTime = 0;
         protected FXGroup driveSound;
@@ -68,6 +67,7 @@ namespace ScienceFoundry.FTL
         [KSPField(guiActive = true, guiActiveEditor = true, guiName = "Beacon", isPersistant = false)]
         private string beaconName = BeaconSelector.NO_TARGET;
 
+        private double generatedForce = 0;
         private double Force
         {
             get
@@ -80,6 +80,7 @@ namespace ScienceFoundry.FTL
                 generatedForce = value;
             }
         }
+
         private double totalGeneratedForce = 0f;
         private double TotalGeneratedForce
         {
@@ -93,8 +94,6 @@ namespace ScienceFoundry.FTL
                 totalGeneratedForce = value;
             }
         }
-
-        private double generatedForce = 0;
 
         [KSPField(guiActive = true, guiActiveEditor = true, guiName = "Generated force", isPersistant = false)]
         private string generatedForceStr = "0.0iN";
@@ -136,6 +135,7 @@ namespace ScienceFoundry.FTL
                 d += dm.requiredElectricalCharge;
             return d;
         }
+
         /// <summary>
         /// Return the largest charge time in the list
         /// </summary>
@@ -170,6 +170,7 @@ namespace ScienceFoundry.FTL
         }
 
         bool driveActive = true;
+
         [KSPEvent(active = true, guiActive = true, guiActiveEditor = true, guiName = "Active (deactivate)")]
         public void DriveActive()
         {
@@ -180,6 +181,7 @@ namespace ScienceFoundry.FTL
                 availableFtlDrives.Remove(this);
             UpdateEvents();
         }
+
         [KSPEvent(active = true, guiActive = true, guiActiveEditor = true, guiName = "Jump")]
         public void Jump()
         {
@@ -211,9 +213,7 @@ namespace ScienceFoundry.FTL
         protected void UpdateEvents()
         {
             Events["Jump"].guiName = (state == DriveState.IDLE) ? "Jump" : "Emergency Stop Jump";
-
             Events["DriveActive"].guiName = driveActive ? "Active (deactivate)" : "Not Active (activate)";
-
         }
 
         [KSPAction("Activate drive")]
@@ -245,9 +245,7 @@ namespace ScienceFoundry.FTL
 
                 if (navCom.JumpPossible)
                 {
-                    ScreenMessages.PostScreenMessage(String.Format("Beacon {0} selected", beaconName),
-                                                     4f,
-                                                     ScreenMessageStyle.UPPER_CENTER);
+                    ScreenMessages.PostScreenMessage(String.Format("Beacon {0} selected", beaconName), 4f, ScreenMessageStyle.UPPER_CENTER);
                 }
                 else
                 {
@@ -289,8 +287,6 @@ namespace ScienceFoundry.FTL
             display = true;
         }
 
-
-
         void OnGUI()
         {
             if (!display)
@@ -298,6 +294,7 @@ namespace ScienceFoundry.FTL
 
             position = GUILayout.Window(523429, position, Display, "FTL Analysis Report");
         }
+
         void Display(int windowId)
         {
             GUILayout.BeginHorizontal();
@@ -322,6 +319,7 @@ namespace ScienceFoundry.FTL
             totalRequiredElectricalCharge = TotalCombinedElectricalCharge();
             absoluteMaxChargeTime = AbsoluteMaxChargeTime();
         }
+
         private void UpdateJumpStatistics()
         {
             if (navCom.JumpPossible)
@@ -358,8 +356,6 @@ namespace ScienceFoundry.FTL
                     retValue = String.Format("{0} ({1:0.0km})", body.name, altitude / 1000);
                 else
                     retValue = String.Format("{0} ({1:0.0Mm})", body.name, altitude / 1000000);
-
-
             }
 
             return retValue;
@@ -408,14 +404,10 @@ namespace ScienceFoundry.FTL
 
                 animationState.speed = 0;
                 animationState.normalizedTime = 0f;
-                
                 animationState.enabled = true;
                 animationState.wrapMode = wrapMode;
-
                 states.Add(animationState);
-
-
-               //     animation.Play(animationName);
+                // animation.Play(animationName);
             };
             // return states.ToArray();
         }
@@ -443,7 +435,6 @@ namespace ScienceFoundry.FTL
         }
 
         private double lastUpdateTime = -1.0f;
-
         private double LastUpdateTime
         {
             get
@@ -452,7 +443,6 @@ namespace ScienceFoundry.FTL
                 {
                     lastUpdateTime = Planetarium.GetUniversalTime();
                 }
-
                 return lastUpdateTime;
             }
             set
@@ -478,7 +468,6 @@ namespace ScienceFoundry.FTL
                         state = DriveState.SPINNING;
                         activationTime = 0;
                         recalcValues();
-
                         break;
                     case DriveState.SPINNING:
                         SpinningUpDrive(deltaT);
@@ -561,13 +550,12 @@ namespace ScienceFoundry.FTL
                     }
 
                     anim.Play(activeAnim);
-
                 }
                 else
                     Debug.Log("anim is null");
             }
-
         }
+
         /**
          * \brief Check if the vessel is ready
          * \return true if the vessel is ready, otherwise false.
@@ -612,6 +600,7 @@ namespace ScienceFoundry.FTL
         }
 
         double absoluteMaxRechargeTime;
+
         /// <summary>
         /// Activates jumping on only one drive, to avoid multiple drives jumping at the same time
         /// </summary>
@@ -622,8 +611,6 @@ namespace ScienceFoundry.FTL
 
             state = DriveState.JUMPING;
         }
-
-
 
         private void SpinningUpDrive(double deltaT)
         {
@@ -684,5 +671,6 @@ namespace ScienceFoundry.FTL
                 dm.UpdateEvents();
             }
         }
+
     }
 }
