@@ -150,7 +150,7 @@ namespace ScienceFoundry.FTL
             sb.AppendFormat("Maximum charge time: {0:0.0}s\n", maxChargeTime);
             sb.AppendFormat("\n");
             sb.AppendFormat("Requires\n");
-            sb.AppendFormat("- Electric charge: {0:0.0}/s\n", totalRequiredElectricalCharge);
+            sb.AppendFormat("- Electric charge: {0:0.0}/s\n", requiredElectricalCharge);
             sb.AppendFormat("\n");
             sb.Append("Navigational computer\n");
             sb.Append("- Required force\n");
