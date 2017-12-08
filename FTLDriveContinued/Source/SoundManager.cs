@@ -78,14 +78,8 @@ namespace ScienceFoundry.FTL
 
         public static void CreateFXSound(Part part, FXGroup group, string defaultSound, bool loop, float maxDistance = 30f)
         {
-            if (part == null)
-            {
-                group.audio = Camera.main.gameObject.AddComponent<AudioSource>();
-            }
-            else
-            {
-                group.audio = part.gameObject.AddComponent<AudioSource>();
-            }
+            group.audio = (part == null ? Camera.main : part).gameObject.AddComponent<AudioSource>();
+
             group.audio.volume = GameSettings.SHIP_VOLUME;
             group.audio.rolloffMode = AudioRolloffMode.Linear;
             group.audio.dopplerLevel = 0f;
