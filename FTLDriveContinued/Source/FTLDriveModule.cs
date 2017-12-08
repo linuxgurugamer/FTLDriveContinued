@@ -15,11 +15,7 @@ namespace ScienceFoundry.FTL
         {
             if (MathPow == null)
             {
-                MathPow = new double[10];
-                for (int cnt = 0; cnt < 10; cnt++)
-                {
-                    MathPow[cnt] = Math.Pow(1.4, -cnt);
-                }
+                MathPow = Enumerable.Range(0,10).Select(i => Math.Pow(1.4, -i));
             }
         }
 
