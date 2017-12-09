@@ -15,7 +15,7 @@ namespace ScienceFoundry.FTL
         {
             if (MathPow == null)
             {
-                MathPow = Enumerable.Range(0,10).Select(i => Math.Pow(1.4, -i));
+                MathPow = Enumerable.Range(0, 10).Select(i => Math.Pow(1.4, -i)).ToArray();
             }
         }
 
@@ -116,12 +116,12 @@ namespace ScienceFoundry.FTL
 
         double MaxCombinedGeneratorForce()
         {
-            return availableFtlDrives.Select(drv => drv.maxGeneratorForce).Sum()
+            return availableFtlDrives.Select(drv => drv.maxGeneratorForce).Sum();
         }
 
         double TotalCombinedElectricalCharge()
         {
-            return availableFtlDrives.Select(drv => drv.requiredElectricalCharge).Sum()
+            return availableFtlDrives.Select(drv => drv.requiredElectricalCharge).Sum();
         }
 
         /// <summary>
@@ -130,7 +130,7 @@ namespace ScienceFoundry.FTL
         /// <returns></returns>
         double AbsoluteMaxChargeTime()
         {
-            return availableFtlDrives.Select(drv => drv.maxChargeTime).DefaultIfEmpty().Max()
+            return availableFtlDrives.Select(drv => drv.maxChargeTime).DefaultIfEmpty().Max();
         }
 
         /**
@@ -569,7 +569,7 @@ namespace ScienceFoundry.FTL
         
         private double TotalForce()
         {
-            return availableFtlDrives.OrderByDescending(drv => drv.Force).Take(10).Select((f,i) => f * MathPow[i]).Sum()
+            return availableFtlDrives.Select(drv => drv.Force).OrderByDescending(x => x).Take(10).Select((f,i) => f * MathPow[i]).Sum();
         }
 
         double absoluteMaxRechargeTime;

@@ -61,7 +61,7 @@ namespace ScienceFoundry.FTL
 
         public static void CreateFXSound(Part part, FXGroup group, string defaultSound, bool loop, float maxDistance = 30f)
         {
-            group.audio = (part == null ? Camera.main : part).gameObject.AddComponent<AudioSource>();
+            group.audio = (part as UnityEngine.Component ?? Camera.main).gameObject.AddComponent<AudioSource>();
 
             group.audio.volume = GameSettings.SHIP_VOLUME;
             group.audio.rolloffMode = AudioRolloffMode.Linear;

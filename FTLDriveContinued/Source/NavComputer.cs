@@ -105,7 +105,7 @@ namespace ScienceFoundry.FTL
 
         public double GetSuccessProbability(double generatedPunchForce)
         {
-            return Math.Min(1, Math.Max(0, generatedPunchForce / GetRequiredForce()))
+            return Math.Min(1, Math.Max(0, generatedPunchForce / GetRequiredForce()));
         }
 
     }
