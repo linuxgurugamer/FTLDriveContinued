@@ -9,6 +9,7 @@ namespace ScienceFoundry.FTL
     public static class BeaconSelector
     {
         public const string NO_TARGET = "No Beacon Selected";
+        public const string MODULE_NAME = "FTLBeaconModule";
 
         public static Vessel Next(Vessel current, Vessel activeVessel)
         {
@@ -32,61 +33,33 @@ namespace ScienceFoundry.FTL
 
         private static bool VesselHasAnActiveBeacon(Vessel v)
         {
-            return v.loaded ? CheckLoadedVesselForABeacon(v) : CheckUnloadedVesselForABeacon(v);
-        }
-
-        private static bool CheckUnloadedVesselForABeacon(Vessel v)
-        {
-            bool retValue = false;
-            const string module_name = "FTLBeaconModule";
-
-            foreach (ProtoPartSnapshot pps in v.protoVessel.protoPartSnapshots)
+            try
             {
-                foreach (ProtoPartModuleSnapshot m in pps.modules)
+                if (v.loaded)
                 {
-                    if (m.moduleName == module_name)
-                    {
-                        try
-                        {
-                            retValue |= Convert.ToBoolean(m.moduleValues.GetValue("beaconActivated"));
-                        }
-                        catch (Exception e)
-                        {
-                            LogsManager.ErrorLog("Proto Beacon activated: Exception: " + e.Message);
-                        }
-                        break;
-                    }
+                    foreach (Part p in v.parts)
+                        if (p.State != PartStates.DEAD)
+                            foreach (PartModule pm in p.Modules)
+                                if (pm.moduleName == MODULE_NAME)
+                                    if ((pm as FTLBeaconModule)?.IsBeaconActive())
+                                        return true;
+                    return false;
+                }
+                else
+                {
+                    foreach (ProtoPartSnapshot pps in v.protoVessel.protoPartSnapshots)
+                        foreach (ProtoPartModuleSnapshot m in pps.modules)
+                            if (m.moduleName == MODULE_NAME)
+                                if (Convert.ToBoolean(m.moduleValues.GetValue("beaconActivated")))
+                                    return true;
+                    return false;
                 }
             }
-            return retValue;
-        }
-
-        private static bool CheckLoadedVesselForABeacon(Vessel v)
-        {
-            bool retValue = false;
-            const string module_name = "FTLBeaconModule";
-
-            foreach (Part p in v.parts)
+            catch
             {
-                if (p.State != PartStates.DEAD)
-                {
-                    foreach (PartModule pm in p.Modules)
-                    {
-                        if (pm.moduleName == module_name)
-                        {
-                            var beacon = pm as FTLBeaconModule;
-
-                            if (beacon != null)
-                            {
-                                retValue |= beacon.IsBeaconActive();
-                            }
-                            else
-                                LogsManager.ErrorLog("Not as expected a FTLBeaconModule");
-                        }
-                    }
-                }
+                LogsManager.ErrorLog("Enumerating modules caused unexpected error");
+                return false;
             }
-            return retValue;
         }
 
     }
