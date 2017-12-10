@@ -3,47 +3,21 @@ using UnityEngine;
 
 namespace ScienceFoundry.FTL
 {
-    class SoundManager
+    static class SoundManager
     {
-        static SoundManager instance;
-
-        Dictionary<string, AudioClip> Sounds = new Dictionary<string, AudioClip>();
-
-        public static bool IsInitialized
-        {
-            get
-            {
-                return (instance != null);
-            }
-        }
-
-        public static void Initialize()
-        {
-            if (instance == null)
-            {
-                instance = new SoundManager();
-            }
-        }
+        static Dictionary<string, AudioClip> Sounds = new Dictionary<string, AudioClip>();
 
         public static void LoadSound(string filePath, string soundName)
         {
-            if (instance != null)
+            foreach (var pair in instance.Sounds)
             {
-                foreach (KeyValuePair<string, AudioClip> pair in instance.Sounds)
-                {
-                    if (pair.Key == soundName)
-                        return;
-                }
-
-                if (GameDatabase.Instance.ExistsAudioClip(filePath))
-                {
-                    instance.Sounds.Add(soundName, GameDatabase.Instance.GetAudioClip(filePath));
-                }
+                if (pair.Key == soundName)
+                    return;
             }
-            else
+
+            if (GameDatabase.Instance.ExistsAudioClip(filePath))
             {
-                Initialize();
-                LoadSound(filePath, soundName);
+                instance.Sounds.Add(soundName, GameDatabase.Instance.GetAudioClip(filePath));
             }
         }
 

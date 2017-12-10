@@ -7,9 +7,9 @@ namespace ScienceFoundry.FTL
 {
     public static class VesselExt
     {
-        public static void Kill(this Vessel self)
+        public static void Explode(this Vessel self)
         {
-            foreach (var p in self.Parts.ToArray())
+            foreach (var p in self.Parts)
             {
                 p.explode();
             }
@@ -28,7 +28,7 @@ namespace ScienceFoundry.FTL
         {
             if (newOrbit.getRelativePositionAtUT(Planetarium.GetUniversalTime()).magnitude > newOrbit.referenceBody.sphereOfInfluence)
             {
-                UnityEngine.Debug.Log("Destination position was above the sphere of influence");
+                LogsManager.ErrorLog("Destination position was above the sphere of influence");
                 return;
             }
 
@@ -38,7 +38,7 @@ namespace ScienceFoundry.FTL
             }
             catch (NullReferenceException)
             {
-                UnityEngine.Debug.Log("OrbitPhysicsManager.HoldVesselUnpack threw NullReferenceException");
+                LogsManager.ErrorLog("OrbitPhysicsManager.HoldVesselUnpack threw NullReferenceException");
             }
 
             vessel.GoOnRails();
@@ -112,29 +112,23 @@ namespace ScienceFoundry.FTL
             return new Orbit(inc, e, sma, lan, w, mEp, epoch, body);
         }
 
-        /**
-         * \brief Calculate the required force for creating hole into hyperspace
-         * 
-         * \param vessel the vessel for which position to calculate the force required to create a hole into hyperspace.
-         * \return the force required in imaginary newtons [iN]
-         */
+        private static double Square(double x)
+        {
+            return x*x;
+        }
+
         public static double TunnelCreationRequirement(this Vessel self)
         {
             var orbit = self.GetOrbitDriver().orbit;
-            return CalculateGravitation(orbit.referenceBody, orbit.altitude + orbit.referenceBody.Radius);
+            return CalculateGravitation(orbit?.referenceBody);
         }
 
-        private static double CalculateGravitation(CelestialBody body, double altitude)
+        private static double CalculateGravitation(CelestialBody body)
         {
-            double retValue = body.gravParameter / (altitude * altitude);
-            var orbit = body.GetOrbit();
-            
-            if (orbit != null && orbit.referenceBody != null)
-            {
-                retValue += CalculateGravitation(orbit.referenceBody, orbit.altitude + orbit.referenceBody.Radius);
-            }
-
-            return retValue;
+            var orbit = body?.GetOrbit();
+            if (orbit == null) return 0d;
+            return force = (body.gravParameter / Square(orbit.altitude + orbit.referenceBody.Radius))
+                            + CalculateGravitation(orbit.referenceBody);
         }
 
     }

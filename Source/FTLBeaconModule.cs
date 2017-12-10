@@ -23,8 +23,7 @@ namespace ScienceFoundry.FTL
             {
                 if (beaconActivated)
                 {
-                    UnityEngine.Debug.Log("Deactivating Beacon");
-
+                    LogsManager.ErrorLog("Deactivating Beacon");
                     foreach (var animation in part.FindModelAnimators(animStages[i]))
                     {
                         //animation[animationName].speed = 0;
@@ -35,7 +34,7 @@ namespace ScienceFoundry.FTL
                 }
                 else
                 {
-                    UnityEngine.Debug.Log("Activating Beacon");
+                    LogsManager.ErrorLog("Activating Beacon");
                     foreach (var animation in part.FindModelAnimators(animStages[i]))
                     {
                         //animation[animationName].speed = 1;
@@ -57,6 +56,16 @@ namespace ScienceFoundry.FTL
         public bool IsBeaconActive()
         {
             return beaconActivated;
+        }
+
+        public override string GetInfo()
+        {
+            var sb = new StringBuilder();
+
+            sb.Append("Navigational computer\n");
+            sb.Append("- Broadcasts position to all vessels\n");
+
+            return sb.ToString();
         }
 
 

@@ -23,12 +23,6 @@ namespace ScienceFoundry.FTL
 
         //------------------------------ CORE FUNCTIONALITY ---------------------------------------
 
-        /**
-         * \brief Jump beacon name (displayed in the GUI)
-         * This is the name of the currently selected jump beacon. It is updated from the Next function,
-         * which will go to the next active beacon on the list.
-         * \note this variable is not actually used by the mod, it is only for the GUI
-         */
         [KSPField(guiActive = true, guiActiveEditor = true, guiName = "Beacon", isPersistant = false)]
         private string beaconName = BeaconSelector.NO_TARGET;
 
@@ -64,9 +58,6 @@ namespace ScienceFoundry.FTL
         private double activationTime = 0;
         bool driveActive = true;
 
-        /**
-         * \brief Currently selected beacon.
-         */
         private NavComputer navCom = new NavComputer();
 
 
@@ -138,10 +129,6 @@ namespace ScienceFoundry.FTL
             return availableFtlDrives.Select(drv => drv.requiredElectricalCharge).Sum();
         }
 
-        /// <summary>
-        /// Return the largest charge time in the list
-        /// </summary>
-        /// <returns></returns>
         double AbsoluteMaxChargeTime()
         {
             return availableFtlDrives.Select(drv => drv.maxChargeTime).DefaultIfEmpty().Max();
@@ -438,19 +425,11 @@ namespace ScienceFoundry.FTL
             base.OnFixedUpdate();
         }
 
-        /**
-         * \brief Check if the vessel is ready
-         * \return true if the vessel is ready, otherwise false.
-         */
         private static bool IsVesselReady()
         {
             return (Time.timeSinceLevelLoad > 1.0f) && FlightGlobals.ready;
         }
 
-        /**
-         * \brief Return the elapsed time since last update.
-         * \return elapsed time
-         */
         private double GetElapsedTime()
         {
             return Planetarium.GetUniversalTime() - LastUpdateTime;
@@ -467,9 +446,7 @@ namespace ScienceFoundry.FTL
             return availableFtlDrives.Select(drv => drv.Force).OrderByDescending(x => x).Take(10).Select((f, i) => f * MathPow[i]).Sum();
         }
 
-        /// <summary>
         /// Activates jumping on only one drive, to avoid multiple drives jumping at the same time
-        /// </summary>
         void ActivateJumping()
         {
             foreach (var dm in availableFtlDrives)
@@ -513,20 +490,18 @@ namespace ScienceFoundry.FTL
         {
             var demand = deltaT * totalRequiredElectricalCharge; // requiredElectricalCharge;
             var delivered = part.RequestResource("ElectricCharge", demand);
-            //Debug.Log("PowerDrive:  deltaT: " + deltaT.ToString() + "  demand: " + demand.ToString() + "   delivered: " + delivered.ToString() + "  deltaF: " + deltaF.ToString());
             return deltaF * (delivered / demand);
         }
 
         private void ExecuteJump()
         {
-            //Debug.Log("ExecuteJump");
             if (navCom.Jump(TotalForce()))
             {
-                ScreenMessages.PostScreenMessage("Jump Completed!", 5f, ScreenMessageStyle.UPPER_CENTER);
+                ScreenMessages.PostScreenMessage("Jump successful!", 5f, ScreenMessageStyle.UPPER_CENTER);
             }
             else
             {
-                ScreenMessages.PostScreenMessage("Jump failed!", 2f, ScreenMessageStyle.UPPER_CENTER);
+                ScreenMessages.PostScreenMessage("Jump failed!", 5f, ScreenMessageStyle.UPPER_CENTER);
             }
             foreach (var dm in availableFtlDrives)
             {
