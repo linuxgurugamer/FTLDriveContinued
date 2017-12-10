@@ -58,6 +58,16 @@ namespace ScienceFoundry.FTL
             return beaconActivated;
         }
 
+        public override string GetInfo()
+        {
+            var sb = new StringBuilder();
+
+            sb.Append("Navigational computer\n");
+            sb.Append("- Broadcasts position to all vessels\n");
+
+            return sb.ToString();
+        }
+
 
         //------------------------------ ANIMATION ------------------------------------------------
 
