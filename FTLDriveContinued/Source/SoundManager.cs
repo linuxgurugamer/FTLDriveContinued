@@ -1,7 +1,4 @@
-﻿//using System;
-using System.Collections.Generic;
-//using System.Linq;
-//using System.Text;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace ScienceFoundry.FTL
@@ -10,7 +7,7 @@ namespace ScienceFoundry.FTL
     {
         static SoundManager instance;
 
-        Dictionary<string, AudioClip> Sounds;
+        Dictionary<string, AudioClip> Sounds = new Dictionary<string, AudioClip>();
 
         public static bool IsInitialized
         {
@@ -20,17 +17,11 @@ namespace ScienceFoundry.FTL
             }
         }
 
-        SoundManager()
-        {
-            Sounds = new Dictionary<string, AudioClip>();
-        }
-
         public static void Initialize()
         {
             if (instance == null)
             {
                 instance = new SoundManager();
-                //Logger.DebugLog("Sound Manager STARTED.");
             }
         }
 
@@ -41,19 +32,12 @@ namespace ScienceFoundry.FTL
                 foreach (KeyValuePair<string, AudioClip> pair in instance.Sounds)
                 {
                     if (pair.Key == soundName)
-                    {
                         return;
-                    }
                 }
 
                 if (GameDatabase.Instance.ExistsAudioClip(filePath))
                 {
                     instance.Sounds.Add(soundName, GameDatabase.Instance.GetAudioClip(filePath));
-                    //Logger.DebugLog("Loaded: " + soundName);
-                }
-                else
-                {
-                    //Logger.DebugError("ERROR: Sound \"" + soundName + "\" not found in the database!");
                 }
             }
             else
@@ -71,21 +55,14 @@ namespace ScienceFoundry.FTL
             }
             catch
             {
-                //Logger.DebugError("ERROR: AudioClip \"" + soundName + "\" not found! Ensure it is being properly loaded.");
                 return null;
             }
         }
 
         public static void CreateFXSound(Part part, FXGroup group, string defaultSound, bool loop, float maxDistance = 30f)
         {
-            if (part == null)
-            {
-                group.audio = Camera.main.gameObject.AddComponent<AudioSource>();
-            }
-            else
-            {
-                group.audio = part.gameObject.AddComponent<AudioSource>();
-            }
+            group.audio = (part as UnityEngine.Component ?? Camera.main).gameObject.AddComponent<AudioSource>();
+
             group.audio.volume = GameSettings.SHIP_VOLUME;
             group.audio.rolloffMode = AudioRolloffMode.Linear;
             group.audio.dopplerLevel = 0f;
@@ -95,5 +72,6 @@ namespace ScienceFoundry.FTL
             group.audio.playOnAwake = false;
             group.audio.clip = GetSound(defaultSound);
         }
+
     }
 }

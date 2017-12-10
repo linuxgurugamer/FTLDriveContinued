@@ -15,22 +15,16 @@ namespace ScienceFoundry.FTL
             }
         }
 
-        public static void Rendezvous(this Vessel self, Vessel destination, double leadTime = 2)
+        public static void Rendezvous(this Vessel self, Vessel destination, double leadTime = 2d)
         {
             var o = destination.orbit;
-            var newOrbit = CreateOrbit(o.inclination,
-                                        o.eccentricity,
-                                        o.semiMajorAxis,
-                                        o.LAN,
-                                        o.argumentOfPeriapsis,
-                                        o.meanAnomalyAtEpoch,
-                                        o.epoch - leadTime,
-                                        o.referenceBody);
+            var newOrbit = CreateOrbit(o.inclination, o.eccentricity, o.semiMajorAxis, o.LAN, o.argumentOfPeriapsis, o.meanAnomalyAtEpoch, 
+                                       o.epoch - leadTime, o.referenceBody);
 
-            SetOrbit(self, newOrbit);
+            self.SetOrbit(newOrbit);
         }
 
-        private static void SetOrbit(Vessel vessel, Orbit newOrbit)
+        private static void SetOrbit(this Vessel vessel, Orbit newOrbit)
         {
             if (newOrbit.getRelativePositionAtUT(Planetarium.GetUniversalTime()).magnitude > newOrbit.referenceBody.sphereOfInfluence)
             {
@@ -51,7 +45,7 @@ namespace ScienceFoundry.FTL
 
             var oldBody = vessel.orbitDriver.orbit.referenceBody;
 
-            UpdateOrbit(vessel.orbitDriver, newOrbit);
+            vessel.orbitDriver.UpdateOrbit(newOrbit);
 
             vessel.orbitDriver.pos = vessel.orbit.pos.xzy;
             vessel.orbitDriver.vel = vessel.orbit.vel;
@@ -65,7 +59,7 @@ namespace ScienceFoundry.FTL
             }
         }
 
-        private static void UpdateOrbit(OrbitDriver orbitDriver, Orbit newOrbit)
+        private static void UpdateOrbit(this OrbitDriver orbitDriver, Orbit newOrbit)
         {
             var orbit = orbitDriver.orbit;
 
@@ -118,19 +112,16 @@ namespace ScienceFoundry.FTL
             return new Orbit(inc, e, sma, lan, w, mEp, epoch, body);
         }
 
-
         /**
          * \brief Calculate the required force for creating hole into hyperspace
          * 
          * \param vessel the vessel for which position to calculate the force required to create a hole into hyperspace.
          * \return the force required in imaginary newtons [iN]
          */
-         
         public static double TunnelCreationRequirement(this Vessel self)
         {
             var orbit = self.GetOrbitDriver().orbit;
-            return CalculateGravitation(orbit.referenceBody,
-                                        orbit.altitude + orbit.referenceBody.Radius);
+            return CalculateGravitation(orbit.referenceBody, orbit.altitude + orbit.referenceBody.Radius);
         }
 
         private static double CalculateGravitation(CelestialBody body, double altitude)
@@ -138,15 +129,13 @@ namespace ScienceFoundry.FTL
             double retValue = body.gravParameter / (altitude * altitude);
             var orbit = body.GetOrbit();
             
-            if (orbit != null)
+            if (orbit != null && orbit.referenceBody != null)
             {
-                if (orbit.referenceBody != null)
-                {
-                    retValue += CalculateGravitation(orbit.referenceBody, orbit.altitude + orbit.referenceBody.Radius);
-                }
+                retValue += CalculateGravitation(orbit.referenceBody, orbit.altitude + orbit.referenceBody.Radius);
             }
 
             return retValue;
         }
+
     }
 }

@@ -1,8 +1,4 @@
-﻿//using System;
-//using System.Collections.Generic;
-using System.Linq;
-//using System.Text;
-//using System.Diagnostics;
+﻿using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,32 +7,13 @@ namespace ScienceFoundry.FTL
     [KSPModule("FTL Beacon")]
     public class FTLBeaconModule : PartModule
     {
+        //------------------------------ SETUP (RUN ONCE) -----------------------------------------
+
+
+        //------------------------------ CORE FUNCTIONALITY ---------------------------------------
+
         [KSPField(guiActive = false, guiActiveEditor = false, isPersistant = true)]
         private bool beaconActivated = false;
-
-        [KSPField]
-        public string animationNames;
-
-        private string[] animStages = { };
-
-        // animationRampspeed is how quickly it gets up to speed.  1 meaning it gets to full speed (as defined by 
-        // the animSpeed and customAnimationSpeed) immediately, less than that will ramp up over time
-        [KSPField]
-        public float animationRampSpeed = 0.001f;
-        // When the mod starts, what speed to set the initial animSpeed to
-        [KSPField]
-        public float startAnimSpeed = 0f;
-        [KSPField]
-        public float customAnimationSpeed = 1f;
-
-
-        private enum RampDirection { none, up, down };
-        private RampDirection rampDirection = RampDirection.none;
-
-        private AnimationState[] containerStates;
-        private List<AnimationState> states = new List<AnimationState>();
-
-        private int animStage = 0;
 
         [KSPEvent(active = true, guiActive = true, guiActiveEditor = true, guiName = "Turn Beacon On")]
         public void ToggleBeacon()
@@ -44,11 +21,10 @@ namespace ScienceFoundry.FTL
             //changed = true;
             for (int i = 0; i < animStages.Length; i++)
             {
-
                 if (beaconActivated)
                 {
                     UnityEngine.Debug.Log("Deactivating Beacon");
-                    
+
                     foreach (var animation in part.FindModelAnimators(animStages[i]))
                     {
                         //animation[animationName].speed = 0;
@@ -56,7 +32,6 @@ namespace ScienceFoundry.FTL
                         rampDirection = RampDirection.down;
                         // animation.Play(animationName);
                     }
-
                 }
                 else
                 {
@@ -73,6 +48,39 @@ namespace ScienceFoundry.FTL
             beaconActivated = !beaconActivated;
             UpdateEvents();
         }
+
+        private void UpdateEvents()
+        {
+            Events["ToggleBeacon"].guiName = beaconActivated ? "Turn Beacon Off" : "Turn Beacon On";
+        }
+
+        public bool IsBeaconActive()
+        {
+            return beaconActivated;
+        }
+
+
+        //------------------------------ ANIMATION ------------------------------------------------
+
+        [KSPField]
+        public string animationNames;
+        // animationRampspeed is how quickly it gets up to speed.  1 meaning it gets to full speed (as defined by 
+        // the animSpeed and customAnimationSpeed) immediately, less than that will ramp up over time
+        [KSPField]
+        public float animationRampSpeed = 0.001f;
+        // When the mod starts, what speed to set the initial animSpeed to
+        [KSPField]
+        public float startAnimSpeed = 0f;
+        [KSPField]
+        public float customAnimationSpeed = 1f;
+
+        private enum RampDirection { none, up, down };
+        private float ramp = 0;
+        private RampDirection rampDirection = RampDirection.none;
+        private AnimationState[] containerStates;
+        private List<AnimationState> states = new List<AnimationState>();
+        private int animStage = 0;
+        private string[] animStages = { };
 
         public override void OnStart(PartModule.StartState state)
         {
@@ -108,27 +116,14 @@ namespace ScienceFoundry.FTL
                 }
                 animationState.enabled = true;
                 animationState.wrapMode = wrapMode;
-               // animation.Blend(animationName);
+                // animation.Blend(animationName);
                 states.Add(animationState);
 
-               if (beaconActivated)
+                if (beaconActivated)
                     animation.Play(animationName);
             };
-           // return states.ToArray();
+            // return states.ToArray();
         }
-
-
-        private void UpdateEvents()
-        {
-            Events["ToggleBeacon"].guiName = beaconActivated ? "Turn Beacon Off" : "Turn Beacon On";
-        }
-
-        public bool IsBeaconActive()
-        {
-            return beaconActivated;
-        }
-
-        private float ramp = 0;
 
         public void LateUpdate()
         {
@@ -198,12 +193,10 @@ namespace ScienceFoundry.FTL
                     }
 
                     anim.Play(activeAnim);
-
                 }
                 else
                     Debug.Log("anim is null");
             }
-
         }
 
     }
