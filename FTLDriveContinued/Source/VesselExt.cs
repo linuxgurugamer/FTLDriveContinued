@@ -28,7 +28,7 @@ namespace ScienceFoundry.FTL
         {
             if (newOrbit.getRelativePositionAtUT(Planetarium.GetUniversalTime()).magnitude > newOrbit.referenceBody.sphereOfInfluence)
             {
-                UnityEngine.Debug.Log("Destination position was above the sphere of influence");
+                LogsManager.ErrorLog("Destination position was above the sphere of influence");
                 return;
             }
 
@@ -38,7 +38,7 @@ namespace ScienceFoundry.FTL
             }
             catch (NullReferenceException)
             {
-                UnityEngine.Debug.Log("OrbitPhysicsManager.HoldVesselUnpack threw NullReferenceException");
+                LogsManager.ErrorLog("OrbitPhysicsManager.HoldVesselUnpack threw NullReferenceException");
             }
 
             vessel.GoOnRails();

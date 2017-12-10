@@ -52,7 +52,7 @@ namespace ScienceFoundry.FTL
                         }
                         catch (Exception e)
                         {
-                            UnityEngine.Debug.Log("Proto Beacon activated: Exception: " + e.Message);
+                            LogsManager.ErrorLog("Proto Beacon activated: Exception: " + e.Message);
                         }
                         break;
                     }
@@ -81,7 +81,7 @@ namespace ScienceFoundry.FTL
                                 retValue |= beacon.IsBeaconActive();
                             }
                             else
-                                UnityEngine.Debug.Log("Not as expected a FTLBeaconModule");
+                                LogsManager.ErrorLog("Not as expected a FTLBeaconModule");
                         }
                     }
                 }
