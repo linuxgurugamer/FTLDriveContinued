@@ -91,7 +91,7 @@ namespace ScienceFoundry.FTL
                 else
                 {
                     FlightLog("FTL Jump to " + Destination.ToString() + " failed, vessel destroyed");
-                    Source.Kill();
+                    Source.Explode();
                 }
             }
 

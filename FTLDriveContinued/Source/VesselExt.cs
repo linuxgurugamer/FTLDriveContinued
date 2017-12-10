@@ -7,9 +7,9 @@ namespace ScienceFoundry.FTL
 {
     public static class VesselExt
     {
-        public static void Kill(this Vessel self)
+        public static void Explode(this Vessel self)
         {
-            foreach (var p in self.Parts.ToArray())
+            foreach (var p in self.Parts)
             {
                 p.explode();
             }
