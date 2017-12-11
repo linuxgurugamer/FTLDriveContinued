@@ -8,64 +8,47 @@ namespace ScienceFoundry.FTL
     [KSPModule("FTL Beacon")]
     public class FTLBeaconModule : PartModule
     {
-        //------------------------------ SETUP (RUN ONCE) -----------------------------------------
+        //------------------------------ FIELDS ---------------------------------------------------
+
+        [KSPField(isPersistant = true)]
+        public bool beaconActivated = false;
+
+
+        //------------------------------ PARTMODULE OVERRIDES -------------------------------------
+
+        public override void OnStart(PartModule.StartState state)
+        {
+            animationStages = animationNames.Split(',').Select(a => a.Trim()).ToArray();
+
+            foreach (string animStage in animationStages)
+                SetUpAnimation(animStage, this.part, WrapMode.Once);
+            SetUpAnimation(animationStages.Last(), this.part, WrapMode.Loop);
+
+            Events["ToggleBeacon"].guiName = beaconActivated ? "Deactivate Beacon" : "Activate Beacon";
+        }
+
+        public override void OnUpdate()
+        {
+            UpdateAnimations();
+            base.OnUpdate();
+        }
 
 
         //------------------------------ CORE FUNCTIONALITY ---------------------------------------
 
-        [KSPField(guiActive = false, guiActiveEditor = false, isPersistant = true)]
-        private bool beaconActivated = false;
-
-        [KSPEvent(active = true, guiActive = true, guiActiveEditor = true, guiName = "Turn Beacon On")]
+        [KSPEvent(guiActive = true, guiActiveEditor = true, guiName = "Activate Beacon")]
         public void ToggleBeacon()
         {
-            //changed = true;
-            for (int i = 0; i < animStages.Length; i++)
-            {
-                if (beaconActivated)
-                {
-                    LogsManager.ErrorLog("Deactivating Beacon");
-                    foreach (var animation in part.FindModelAnimators(animStages[i]))
-                    {
-                        //animation[animationName].speed = 0;
-                        // animation[animationName].enabled = false;
-                        rampDirection = RampDirection.down;
-                        // animation.Play(animationName);
-                    }
-                }
-                else
-                {
-                    LogsManager.ErrorLog("Activating Beacon");
-                    foreach (var animation in part.FindModelAnimators(animStages[i]))
-                    {
-                        //animation[animationName].speed = 1;
-                        //animation[animationName].enabled = true;
-                        rampDirection = RampDirection.up;
-                        //animation.Play(animationName);
-                    }
-                }
-            }
             beaconActivated = !beaconActivated;
-            UpdateEvents();
-        }
-
-        private void UpdateEvents()
-        {
-            Events["ToggleBeacon"].guiName = beaconActivated ? "Turn Beacon Off" : "Turn Beacon On";
-        }
-
-        public bool IsBeaconActive()
-        {
-            return beaconActivated;
+            Events["ToggleBeacon"].guiName = beaconActivated ? "Deactivate Beacon" : "Activate Beacon";
+            rampDirection = beaconActivated ? RampDirection.up : RampDirection.down;
         }
 
         public override string GetInfo()
         {
             var sb = new StringBuilder();
-
-            sb.Append("Navigational computer\n");
-            sb.Append("- Broadcasts position to all vessels\n");
-
+            sb.Append("Navigational computer \n");
+            sb.Append("- Broadcasts position to vessels \n");
             return sb.ToString();
         }
 
@@ -78,41 +61,29 @@ namespace ScienceFoundry.FTL
         // the animSpeed and customAnimationSpeed) immediately, less than that will ramp up over time
         [KSPField]
         public float animationRampSpeed = 0.001f;
-        // When the mod starts, what speed to set the initial animSpeed to
-        [KSPField]
-        public float startAnimSpeed = 0f;
         [KSPField]
         public float customAnimationSpeed = 1f;
 
         private enum RampDirection { none, up, down };
-        private float ramp = 0;
+
         private RampDirection rampDirection = RampDirection.none;
-        private AnimationState[] containerStates;
-        private List<AnimationState> states = new List<AnimationState>();
+        private float ramp = 0;
         private int animStage = 0;
-        private string[] animStages = { };
+        private string[] animationStages = { };
 
-        public override void OnStart(PartModule.StartState state)
-        {
-            animStages = animationNames.Split(',').Select(a => a.Trim()).ToArray();
 
-            UpdateEvents();
-            for (int i = 0; i < animStages.Length - 1; i++)
-                SetUpAnimation(animStages[i], this.part, WrapMode.Once);
-
-            SetUpAnimation(animStages[animStages.Length - 1], this.part, WrapMode.Loop);
-            containerStates = states.ToArray();
-        }
-
-        public void SetUpAnimation(string animationName, Part part, WrapMode wrapMode)  //Thanks Majiir!
+        public void SetUpAnimation(string animationName, Part part, WrapMode wrapMode)
         {
             foreach (var animation in part.FindModelAnimators(animationName))
             {
                 var animationState = animation[animationName];
+
                 if (beaconActivated)
                 {
                     if (wrapMode != WrapMode.Once)
+                    {
                         animationState.speed = 1;
+                    }
                     else
                     {
                         animationState.speed = 0;
@@ -126,20 +97,18 @@ namespace ScienceFoundry.FTL
                 }
                 animationState.enabled = true;
                 animationState.wrapMode = wrapMode;
-                // animation.Blend(animationName);
-                states.Add(animationState);
 
                 if (beaconActivated)
                     animation.Play(animationName);
             };
-            // return states.ToArray();
         }
 
-        public void LateUpdate()
+        public void UpdateAnimations()
         {
-            if (!HighLogic.LoadedSceneIsFlight && !HighLogic.LoadedSceneIsEditor || rampDirection == RampDirection.none) return;
+            if (!(HighLogic.LoadedSceneIsFlight || HighLogic.LoadedSceneIsEditor) || rampDirection == RampDirection.none)
+                return;
 
-            string activeAnim = animStages[animStage];
+            string activeAnim = animationStages[animStage];
             int curAnimStage = animStage;
 
             foreach (var anim in part.FindModelAnimators(activeAnim))
@@ -147,36 +116,41 @@ namespace ScienceFoundry.FTL
                 if (anim != null)
                 {
                     float origSpd = anim[activeAnim].speed;
-                    switch (rampDirection)
+                    if (rampDirection == RampDirection.up)
                     {
-                        case RampDirection.up:
-                            if (ramp < 1f)
-                            {
-                                ramp += animationRampSpeed;
-                            }
-                            if (ramp > 1f)
-                            {
-                                ramp = 1f;
-                                animStage++;
-                            }
-                            break;
-                        case RampDirection.down:
-                            if (ramp > 0)
-                            {
-                                ramp -= animationRampSpeed;
-                            }
-                            if (ramp < 0)
-                            {
-                                ramp = 0f;
-                                animStage--;
-                            }
-                            break;
+                        if (ramp < 1f)
+                        {
+                            ramp += animationRampSpeed;
+                        }
+                        if (ramp > 1f)
+                        {
+                            ramp = 1f;
+                            animStage++;
+                        }
                     }
+                    else if (rampDirection == RampDirection.down)
+                    {
+                        if (ramp > 0)
+                        {
+                            ramp -= animationRampSpeed;
+                        }
+                        if (ramp < 0)
+                        {
+                            ramp = 0f;
+                            animStage--;
+                        }
+                    }
+
                     
-                    if (curAnimStage < animStages.Length - 1)
+                    if (curAnimStage < animationStages.Length - 1)
+                    {
                         anim[activeAnim].normalizedTime = ramp;
+                    }
                     else
+                    {
                         anim[activeAnim].speed = customAnimationSpeed * ramp;
+                    }
+
                     if (ramp == 0)
                     {
                         if (animStage < 0)
@@ -191,9 +165,9 @@ namespace ScienceFoundry.FTL
                     }
                     else if (ramp == 1)
                     {
-                        if (animStage >= animStages.Length)
+                        if (animStage >= animationStages.Length)
                         {
-                            animStage = animStages.Length - 1;
+                            animStage = animationStages.Length - 1;
                             rampDirection = RampDirection.none;
                         }
                         else
@@ -204,8 +178,6 @@ namespace ScienceFoundry.FTL
 
                     anim.Play(activeAnim);
                 }
-                else
-                    Debug.Log("anim is null");
             }
         }
 
