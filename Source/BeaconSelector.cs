@@ -41,7 +41,7 @@ namespace ScienceFoundry.FTL
                         if (p.State != PartStates.DEAD)
                             foreach (PartModule pm in p.Modules)
                                 if (pm.moduleName == MODULE_NAME)
-                                    if ((pm as FTLBeaconModule)?.IsBeaconActive())
+                                    if (((FTLBeaconModule)pm).IsBeaconActive())
                                         return true;
                     return false;
                 }

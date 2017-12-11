@@ -5,7 +5,7 @@ namespace ScienceFoundry.FTL
 {
     public class NavComputer
     {
-        private Random rndGenerator = new Random();
+        private System.Random rndGenerator = new System.Random();
 
         public Vessel Destination { get; set; }
         public Vessel Source { get; set; }

@@ -127,7 +127,7 @@ namespace ScienceFoundry.FTL
         {
             var orbit = body?.GetOrbit();
             if (orbit == null) return 0d;
-            return force = (body.gravParameter / Square(orbit.altitude + orbit.referenceBody.Radius))
+            return (body.gravParameter / Square(orbit.altitude + orbit.referenceBody.Radius))
                             + CalculateGravitation(orbit.referenceBody);
         }
 
