@@ -1,0 +1,9 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/Source/.vs/FTLDriveContinued/v15
+/Source/bin/Debug
+/Source/obj/Debug
+/Source/bin/Release
+/Source/obj/Release
