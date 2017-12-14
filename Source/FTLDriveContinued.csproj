@@ -36,10 +36,9 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AssemblyVersion.tt</DependentUpon>
     </Compile>
-    <Compile Include="BeaconSelector.cs" />
+    <Compile Include="DynamicDisplay.cs" />
     <Compile Include="FTLBeaconModule.cs" />
     <Compile Include="FTLDriveModule.cs" />
-    <Compile Include="NavComputer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SoundManager.cs" />
     <Compile Include="VesselExt.cs" />

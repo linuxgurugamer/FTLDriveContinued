@@ -1,4 +1,5 @@
-Textures changed to dds (thianks @Deimos Rast)
+unknown
+	Textures changed to dds (thanks @Deimos Rast)
 
 0.1.3
 	New animated models supplied by forum user @steedcrugeon
@@ -17,10 +18,10 @@ Textures changed to dds (thianks @Deimos Rast)
 		Drive #		Multiplier
 			2		0.714285714
 			3		0.510204082
-			4		0.364431487	
-			5		0.260308205	
-			6		0.185934432	
-			7		0.132810309	
+			4		0.364431487
+			5		0.260308205
+			6		0.185934432
+			7		0.132810309
 			8		0.094864506
 			9		0.067760362
 			10		0.048400258
@@ -51,3 +52,10 @@ Textures changed to dds (thianks @Deimos Rast)
 
 0.1.8.2
 	Added RSS patch, thanks @Jimbodiah
+
+beta (planned 0.2)
+	Target vessel is also FTL target. Suggested Engineering Redux mod for selecting vessels.
+	Optimum altitude is min altitude over current body that has 100% success provided EC supply.
+	Multiple drives stack (up to 35) but have diminished return (scaled by 1.4^-i).
+	Uses CommunityTechTree mod (10.000sc to unlock largest drive).
+	Uses TweakScale mod (2x drive has 2x force but 8x mass and 8x cost).

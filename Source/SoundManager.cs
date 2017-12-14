@@ -5,11 +5,11 @@ namespace ScienceFoundry.FTL
 {
     static class SoundManager
     {
-        static Dictionary<string, AudioClip> Sounds = new Dictionary<string, AudioClip>();
+        private static Dictionary<string, AudioClip> Sounds = new Dictionary<string, AudioClip>();
 
         public static void LoadSound(string filePath, string soundName)
         {
-            foreach (var pair in instance.Sounds)
+            foreach (var pair in Sounds)
             {
                 if (pair.Key == soundName)
                     return;
@@ -17,7 +17,7 @@ namespace ScienceFoundry.FTL
 
             if (GameDatabase.Instance.ExistsAudioClip(filePath))
             {
-                instance.Sounds.Add(soundName, GameDatabase.Instance.GetAudioClip(filePath));
+                Sounds.Add(soundName, GameDatabase.Instance.GetAudioClip(filePath));
             }
         }
 
@@ -25,7 +25,7 @@ namespace ScienceFoundry.FTL
         {
             try
             {
-                return instance.Sounds[soundName];
+                return Sounds[soundName];
             }
             catch
             {

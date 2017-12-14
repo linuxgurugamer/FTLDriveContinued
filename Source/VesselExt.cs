@@ -15,7 +15,7 @@ namespace ScienceFoundry.FTL
             }
         }
 
-        public static void Rendezvous(this Vessel self, Vessel destination, double leadTime = 2d)
+        public static void Rendezvous(this Vessel self, Vessel destination, double leadTime = 5d)
         {
             var o = destination.orbit;
             var newOrbit = CreateOrbit(o.inclination, o.eccentricity, o.semiMajorAxis, o.LAN, o.argumentOfPeriapsis, o.meanAnomalyAtEpoch, 
@@ -110,25 +110,6 @@ namespace ScienceFoundry.FTL
             }
 
             return new Orbit(inc, e, sma, lan, w, mEp, epoch, body);
-        }
-
-        private static double Square(double x)
-        {
-            return x*x;
-        }
-
-        public static double TunnelCreationRequirement(this Vessel self)
-        {
-            var orbit = self.GetOrbitDriver().orbit;
-            return CalculateGravitation(orbit?.referenceBody);
-        }
-
-        private static double CalculateGravitation(CelestialBody body)
-        {
-            var orbit = body?.GetOrbit();
-            if (orbit == null) return 0d;
-            return force = (body.gravParameter / Square(orbit.altitude + orbit.referenceBody.Radius))
-                            + CalculateGravitation(orbit.referenceBody);
         }
 
     }
