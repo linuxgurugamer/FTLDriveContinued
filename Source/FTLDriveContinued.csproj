@@ -76,12 +76,12 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>start /D D:\Users\jbb\github\FTLDriveContinued\FTLDriveContinued\Source     /WAIT deploy.bat $(TargetDir) $(TargetFileName)
+    <PostBuildEvent>
+start /D D:\Users\jbb\github\FTLDriveContinued /WAIT deploy.bat  $(TargetDir) $(TargetFileName)
 
 if $(ConfigurationName) == Release (
-start /D D:\Users\jbb\github\FTLDriveContinued\FTLDriveContinued\Source    /WAIT buildRelease.bat $(TargetDir) $(TargetFileName)
-)
-</PostBuildEvent>
+	start /D D:\Users\jbb\github\FTLDriveContinued /WAIT buildRelease.bat $(TargetDir) $(TargetFileName)
+)</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>

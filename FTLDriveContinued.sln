@@ -1,16 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.8
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FTLDriveContinued", "FTLDriveContinued.csproj", "{F5B8E18D-7662-4FE4-BC7B-9CD2E9ECE244}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FTLDriveContinued", "Source\FTLDriveContinued.csproj", "{F5B8E18D-7662-4FE4-BC7B-9CD2E9ECE244}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionFolder", "SolutionFolder", "{ED6DC0E4-7BD9-4EEE-BB27-5065083E8952}"
 	ProjectSection(SolutionItems) = preProject
 		buildRelease.bat = buildRelease.bat
-		..\..\Changelog.txt = ..\..\Changelog.txt
+		Changelog.txt = Changelog.txt
 		deploy.bat = deploy.bat
 		FTLDriveContinued.version = FTLDriveContinued.version
+		jenkins.txt = jenkins.txt
 		LICENSE.txt = LICENSE.txt
 	EndProjectSection
 EndProject
@@ -27,5 +28,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5B9995D4-7E42-4AAC-9FA1-D3B79B2E9966}
 	EndGlobalSection
 EndGlobal
