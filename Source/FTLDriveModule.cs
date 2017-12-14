@@ -40,9 +40,15 @@ namespace ScienceFoundry.FTL
         public static double totalChargeStored;
 
         // used for displaying GUI window
+        public struct GuiElement
+        {
+            public string type;
+            public string text;
+            public Action clicked;
+        }
         public static bool windowVisible;
         public static Rect windowPosition;
-        public static string windowContent;
+        public static List<GuiElement> windowContent;
 
         //------------------------------ PARTMODULE OVERRIDES -------------------------------------
 
@@ -64,7 +70,7 @@ namespace ScienceFoundry.FTL
             const int WIDTH = 250;
             const int HEIGHT = 350;
             windowPosition = new Rect((Screen.width - WIDTH) / 2, (Screen.height - HEIGHT) / 2, WIDTH, HEIGHT);
-            windowContent = string.Empty;
+            windowContent = new List<GuiElement>();
 
             base.OnStart(state);
         }
@@ -72,7 +78,7 @@ namespace ScienceFoundry.FTL
         public override void OnUpdate()
         {
             // If no context menu is open, no point computing or displaying anything.
-            if (!UIPartActionController.Instance.ItemListContains(part, false))
+            if (!(UIPartActionController.Instance.ItemListContains(part, false) || windowVisible))
                 return;
 
             try
@@ -170,10 +176,12 @@ namespace ScienceFoundry.FTL
 
                     if (windowVisible)
                     {
+                        windowContent.Clear();
+
                         StringBuilder sb = new StringBuilder();
                         sb.AppendEx("Total generated force", String.Format("{0:N1}iN", totalGeneratedForce));
                         sb.AppendEx("Total required EC", String.Format("{0:N1}/s over {1:N1}s", totalChargeRate, totalChargeTime));
-                        sb.AppendEx("");
+                        windowContent.Add(new GuiElement() { type = "text", text = sb.ToString() });
 
                         foreach (Vessel vessel in FlightGlobals.Vessels)
                         {
@@ -201,15 +209,18 @@ namespace ScienceFoundry.FTL
                                 double optimumAltitude = (-B + Math.Sqrt(delta)) / 2;
                                 bool optimumBeyondSOI = optimumAltitude > Source.orbit.referenceBody.sphereOfInfluence;
 
+                                sb = new StringBuilder();
                                 sb.AppendEx("A vessel orbiting", String.Format("{0} at {1:N1}km", targetBodyName, targetAltitude / 1000));
                                 sb.AppendEx("Required force", String.Format("{0:N1}iN", neededForce));
                                 sb.AppendEx("Success probability", String.Format("{0:P0}", successProbability));
                                 sb.AppendEx("Optimum altitude", String.Format((optimumExists ? ("{0:N1}km" + (optimumBeyondSOI ? " (beyond SOI)" : "")) : "none (insufficient drives?)"), optimumAltitude / 1000));
-                                sb.AppendEx("");
+
+                                windowContent.Add(new GuiElement() { type = "text", text = sb.ToString() });
+                                //windowContent.Add(new GuiElement() { type = "button", text = "Select", clicked = null });
                             }
                         }
-                        windowContent = sb.ToString();
 
+                        //windowContent.Add(new GuiElement() { type = "button", text = "Close", clicked = () => { windowVisible = false; } });
                     }
                 }
             }
@@ -371,19 +382,24 @@ namespace ScienceFoundry.FTL
 
         void Display(int windowId)
         {
-            GUILayout.BeginHorizontal();
-            GUILayout.TextField(windowContent);
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
-            if (GUILayout.Button("Ok", GUILayout.Height(30)))
+            foreach (GuiElement e in windowContent)
             {
-                windowVisible = false;
+                GUILayout.BeginHorizontal();
+                if (e.type == "text")
+                {
+                    GUILayout.TextField(e.text);
+                }
+                if (e.type == "space")
+                {
+                    GUILayout.FlexibleSpace();
+                }
+                if (e.type == "button")
+                {
+                    if (GUILayout.Button(e.text, GUILayout.Height(30)))
+                        e.clicked.Invoke();
+                }
+                GUILayout.EndHorizontal();
             }
-            GUILayout.FlexibleSpace();
-            GUILayout.EndHorizontal();
-
             GUI.DragWindow();
         }
 
