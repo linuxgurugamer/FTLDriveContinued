@@ -41,6 +41,7 @@
     <Compile Include="FTLDriveModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SoundManager.cs" />
+    <Compile Include="StringBuilderExt.cs" />
     <Compile Include="VesselExt.cs" />
     <Compile Include="LogsManager.cs" />
   </ItemGroup>

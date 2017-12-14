@@ -39,6 +39,10 @@ namespace ScienceFoundry.FTL
         public static bool isSpinning;
         public static double totalChargeStored;
 
+        // used for displaying GUI window
+        public static bool windowVisible;
+        public static Rect windowPosition;
+        public static string windowContent;
 
         //------------------------------ PARTMODULE OVERRIDES -------------------------------------
 
@@ -55,6 +59,12 @@ namespace ScienceFoundry.FTL
 
             // NOTE: sufficient for restart while spinning?
             isSpinning = false;
+            // NOTE: hides GUI on reload
+            windowVisible = false;
+            const int WIDTH = 250;
+            const int HEIGHT = 350;
+            windowPosition = new Rect((Screen.width - WIDTH) / 2, (Screen.height - HEIGHT) / 2, WIDTH, HEIGHT);
+            windowContent = string.Empty;
 
             base.OnStart(state);
         }
@@ -82,6 +92,9 @@ namespace ScienceFoundry.FTL
 
                 if (HighLogic.LoadedSceneIsFlight)
                 {
+                    Events["ToggleSpinning"].guiName = isSpinning ? "Abort" : "Spin";
+                    Events["ToggleGUI"].guiName = windowVisible ? "Hide Analysis Report" : "Show Analysis Report";
+
                     if (Destination == null)
                     {
                         ClearLabels();
@@ -111,6 +124,7 @@ namespace ScienceFoundry.FTL
                         totalChargeStored -= totalChargeRate * Time.deltaTime * 0.1d;
                         totalChargeStored += part.RequestResource("ElectricCharge", totalChargeRate * Time.deltaTime);
                         totalChargeStored = Math.Min(totalChargeCapacity, Math.Max(0, totalChargeStored));
+
                         double currentForce = (totalChargeStored / totalChargeCapacity) * totalGeneratedForce;
                         double neededForce = (GravitationalForcesAll(Source.orbit) + GravitationalForcesAll(Destination.orbit)) * Source.totalMass * 1000;
                         // If source and destination are gravity-free like outside Sun SOI, success should be 1. Mild bug.
@@ -152,6 +166,50 @@ namespace ScienceFoundry.FTL
                         AppendLabel("Required force", String.Format("{0:N1}iN", neededForce));
                         AppendLabel("Success probability", String.Format("{0:P0}", successProbability));
                         AppendLabel("Optimum altitude", String.Format((optimumExists ? ("{0:N1}km" + (optimumBeyondSOI ? " (beyond SOI)" : "")) : "none (insufficient drives?)"), optimumAltitude / 1000));
+                    }
+
+                    if (windowVisible)
+                    {
+                        StringBuilder sb = new StringBuilder();
+                        sb.AppendEx("Total generated force", String.Format("{0:N1}iN", totalGeneratedForce));
+                        sb.AppendEx("Total required EC", String.Format("{0:N1}/s over {1:N1}s", totalChargeRate, totalChargeTime));
+                        sb.AppendEx("");
+
+                        foreach (Vessel vessel in FlightGlobals.Vessels)
+                        {
+                            if (VesselHasActiveBeacon(vessel))
+                            {
+                                Func<string, string> trimthe = s => s.StartsWith("The") ? s.Substring(3).Trim() : s;
+                                string targetBodyName = trimthe(vessel.orbit.referenceBody.name);
+                                double targetAltitude = vessel.orbit.altitude;
+
+                                double gravsource = GravitationalForcesAll(Source.orbit);
+                                double gravsourceprim = gravsource - GravitationalForce(Source.orbit);
+                                double gravdest = GravitationalForcesAll(vessel.orbit);
+                                double mass = Source.totalMass * 1000;
+                                double grav0 = Source.orbit.referenceBody.gravParameter;
+                                double radius0 = Source.orbit.referenceBody.Radius;
+
+                                double neededForce = (gravsource + gravdest) * mass;
+                                successProbability = Math.Min(1, Math.Max(0, totalGeneratedForce / neededForce));
+
+                                // Equations are shown on paper, image file in the repository.
+                                double B = 2 * radius0;
+                                double C = Square(radius0) - grav0 / ((totalGeneratedForce / mass) - gravdest - gravsourceprim);
+                                double delta = B * B - 4 * C;
+                                bool optimumExists = delta > 0;
+                                double optimumAltitude = (-B + Math.Sqrt(delta)) / 2;
+                                bool optimumBeyondSOI = optimumAltitude > Source.orbit.referenceBody.sphereOfInfluence;
+
+                                sb.AppendEx("A vessel orbiting", String.Format("{0} at {1:N1}km", targetBodyName, targetAltitude / 1000));
+                                sb.AppendEx("Required force", String.Format("{0:N1}iN", neededForce));
+                                sb.AppendEx("Success probability", String.Format("{0:P0}", successProbability));
+                                sb.AppendEx("Optimum altitude", String.Format((optimumExists ? ("{0:N1}km" + (optimumBeyondSOI ? " (beyond SOI)" : "")) : "none (insufficient drives?)"), optimumAltitude / 1000));
+                                sb.AppendEx("");
+                            }
+                        }
+                        windowContent = sb.ToString();
+
                     }
                 }
             }
@@ -208,31 +266,33 @@ namespace ScienceFoundry.FTL
 
         private bool DestinationHasActiveBeacon
         {
-            get
+            get => VesselHasActiveBeacon(Destination);
+        }
+
+        private bool VesselHasActiveBeacon(Vessel vessel)
+        {
+            if (vessel == null)
             {
-                if (Destination == null)
-                {
-                    return false;
-                }
-                if (Destination.loaded)
-                {
-                    foreach (Part p in Destination.parts)
-                        if (p.State != PartStates.DEAD)
-                            foreach (PartModule pm in p.Modules)
-                                if (pm.moduleName == "FTLBeaconModule")
-                                    if (((FTLBeaconModule)pm).beaconActivated)
-                                        return true;
-                    return false;
-                }
-                else
-                {
-                    foreach (ProtoPartSnapshot pps in Destination.protoVessel.protoPartSnapshots)
-                        foreach (ProtoPartModuleSnapshot m in pps.modules)
-                            if (m.moduleName == "FTLBeaconModule")
-                                if (Convert.ToBoolean(m.moduleValues.GetValue("beaconActivated")))
+                return false;
+            }
+            if (vessel.loaded)
+            {
+                foreach (Part p in vessel.parts)
+                    if (p.State != PartStates.DEAD)
+                        foreach (PartModule pm in p.Modules)
+                            if (pm.moduleName == "FTLBeaconModule")
+                                if (((FTLBeaconModule)pm).beaconActivated)
                                     return true;
-                    return false;
-                }
+                return false;
+            }
+            else
+            {
+                foreach (ProtoPartSnapshot pps in vessel.protoVessel.protoPartSnapshots)
+                    foreach (ProtoPartModuleSnapshot m in pps.modules)
+                        if (m.moduleName == "FTLBeaconModule")
+                            if (Convert.ToBoolean(m.moduleValues.GetValue("beaconActivated")))
+                                return true;
+                return false;
             }
         }
 
@@ -294,6 +354,39 @@ namespace ScienceFoundry.FTL
                 }
             }
         }
+
+        [KSPEvent(guiActive = true, guiName = "Show/Hide Analysis Report")]
+        public void ToggleGUI()
+        {
+            windowVisible = !windowVisible;
+        }
+
+        void OnGUI()
+        {
+            if (windowVisible)
+            {
+                windowPosition = GUILayout.Window(523429, windowPosition, Display, "FTL Analysis Report");
+            }
+        }
+
+        void Display(int windowId)
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.TextField(windowContent);
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button("Ok", GUILayout.Height(30)))
+            {
+                windowVisible = false;
+            }
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+
+            GUI.DragWindow();
+        }
+
 
         public override string GetInfo()
         {
