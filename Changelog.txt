@@ -54,8 +54,9 @@ unknown
 	Added RSS patch, thanks @Jimbodiah
 
 beta (planned 0.2)
-	Target vessel is also FTL target. Suggested Engineering Redux mod for selecting vessels.
+	Target vessel is also FTL target. Can select targets using the window or Engineer mod.
 	Optimum altitude is min altitude over current body that has 100% success provided EC supply.
 	Multiple drives stack (up to 35) but have diminished return (scaled by 1.4^-i).
+	Analysis window shows all beacons and their force requirements and optimal altitudes.
 	Uses CommunityTechTree mod (10.000sc to unlock largest drive).
 	Uses TweakScale mod (2x drive has 2x force but 8x mass and 8x cost).

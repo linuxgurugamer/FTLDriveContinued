@@ -38,7 +38,18 @@ namespace ScienceFoundry.FTL
         // stateful variables, cannot be recomputed from other variables
         public static bool isSpinning;
         public static double totalChargeStored;
+        public static bool isReady;
 
+        // used for displaying GUI window
+        public struct GuiElement
+        {
+            public string type;
+            public string text;
+            public Action clicked;
+        }
+        public static bool windowVisible;
+        public static Rect windowPosition;
+        public static List<GuiElement> windowContent;
 
         //------------------------------ PARTMODULE OVERRIDES -------------------------------------
 
@@ -55,14 +66,22 @@ namespace ScienceFoundry.FTL
 
             // NOTE: sufficient for restart while spinning?
             isSpinning = false;
+            // NOTE: hides GUI on reload
+            windowVisible = false;
+            const int WIDTH = 250;
+            const int HEIGHT = 250;
+            windowPosition = new Rect((Screen.width - WIDTH) / 2, (Screen.height - HEIGHT) / 2, WIDTH, HEIGHT);
+            windowContent = new List<GuiElement>();
 
             base.OnStart(state);
         }
 
         public override void OnUpdate()
         {
+            UpdateAnimations();
+
             // If no context menu is open, no point computing or displaying anything.
-            if (!UIPartActionController.Instance.ItemListContains(part, false))
+            if (!(UIPartActionController.Instance.ItemListContains(part, false) || windowVisible))
                 return;
 
             try
@@ -82,46 +101,38 @@ namespace ScienceFoundry.FTL
 
                 if (HighLogic.LoadedSceneIsFlight)
                 {
-                    if (Destination == null)
+                    Events["ToggleSpinning"].guiName = isSpinning ? "Abort" : "Spin";
+                    Events["ToggleGUI"].guiName = windowVisible ? "Hide possible destinations" : "Show possible destinations";
+
+                    if (isSpinning)
                     {
-                        ClearLabels();
-                        AppendLabel("Total generated force", String.Format("{0:N1}iN", totalGeneratedForce));
-                        AppendLabel("Total required EC", String.Format("{0:N1}/s over {1:N1}s", totalChargeRate, totalChargeTime));
-                        AppendLabel("Target vessel", "none selected");
-                    }
-                    // NOTE: Maybe code should check if vessel is dead (aka exploded) after being selected?
-                    //else if (!DestinationExists)
-                    // NOTE: Mode restrictions are OFF. I advise to NOT use these restrictions, there surely are people doing crazy FTL jumps for fun.
-                    //else if (!DestinationHasMode)
-                    //{
-                    //    ClearLabels();
-                    //    AppendLabel("Target vessel", "not flying in space");
-                    //}
-                    else if (!DestinationHasActiveBeacon)
-                    {
-                        ClearLabels();
-                        AppendLabel("Total generated force", String.Format("{0:N1}iN", totalGeneratedForce));
-                        AppendLabel("Total required EC", String.Format("{0:N1}/s over {1:N1}s", totalChargeRate, totalChargeTime));
-                        AppendLabel("Target vessel", "has no active beacon");
-                    }
-                    else if (isSpinning)
-                    {
-                        // If subtraction is after addition, it prevents drives from reaching 100%.
-                        // This causes a mild bug that effective charge time is about 110% of advertised. 
-                        totalChargeStored -= totalChargeRate * Time.deltaTime * 0.1d;
-                        totalChargeStored += part.RequestResource("ElectricCharge", totalChargeRate * Time.deltaTime);
-                        totalChargeStored = Math.Min(totalChargeCapacity, Math.Max(0, totalChargeStored));
+                        if (isReady)
+                        {
+                            part.RequestResource("ElectricCharge", 0.01 * totalChargeRate * (totalChargeStored / totalChargeCapacity) * Time.deltaTime);
+                        }
+                        else
+                        {
+                            totalChargeStored += part.RequestResource("ElectricCharge", totalChargeRate * Time.deltaTime);
+                            totalChargeStored = Math.Min(totalChargeCapacity, Math.Max(0, totalChargeStored));
+                        }
+
                         double currentForce = (totalChargeStored / totalChargeCapacity) * totalGeneratedForce;
                         double neededForce = (GravitationalForcesAll(Source.orbit) + GravitationalForcesAll(Destination.orbit)) * Source.totalMass * 1000;
-                        // If source and destination are gravity-free like outside Sun SOI, success should be 1. Mild bug.
-                        successProbability = Math.Min(1, Math.Max(0, currentForce / neededForce));
+                        // If source and destination are gravity-free like outside Sun SOI, success is 1.
+                        successProbability = neededForce == 0 ? 1 : Math.Min(1, Math.Max(0, currentForce / neededForce));
+                        double currentDrain = isReady ? 0.01 * totalChargeRate * (totalChargeStored / totalChargeCapacity) : totalChargeRate;
+
+                        if (totalChargeStored >= totalChargeCapacity || currentForce > neededForce)
+                        {
+                            isReady = true;
+                        }
 
                         ClearLabels();
                         AppendLabel("Currently generated force", String.Format("{0:N1}iN", currentForce));
-                        AppendLabel("Currently drained EC", String.Format("{0:N1}/s", totalChargeRate));
+                        AppendLabel("Currently drained EC", String.Format("{0:N1}/s", currentDrain));
                         AppendLabel("Success probability", String.Format("{0:P0}", successProbability));
                     }
-                    else
+                    else if (JumpPossible)
                     {
                         Func<string, string> trimthe = s => s.StartsWith("The") ? s.Substring(3).Trim() : s;
                         string targetBodyName = trimthe(Destination.orbit.referenceBody.name);
@@ -153,6 +164,61 @@ namespace ScienceFoundry.FTL
                         AppendLabel("Success probability", String.Format("{0:P0}", successProbability));
                         AppendLabel("Optimum altitude", String.Format((optimumExists ? ("{0:N1}km" + (optimumBeyondSOI ? " (beyond SOI)" : "")) : "none (insufficient drives?)"), optimumAltitude / 1000));
                     }
+                    else
+                    {
+                        ClearLabels();
+                        AppendLabel("Total generated force", String.Format("{0:N1}iN", totalGeneratedForce));
+                        AppendLabel("Total required EC", String.Format("{0:N1}/s over {1:N1}s", totalChargeRate, totalChargeTime));
+                        AppendLabel("Target vessel", "none or invalid");
+                    }
+
+                    if (windowVisible)
+                    {
+                        windowContent.Clear();
+
+                        StringBuilder sb = new StringBuilder();
+                        sb.AppendEx("Total generated force", String.Format("{0:N1}iN", totalGeneratedForce));
+                        sb.AppendEx("Total required EC", String.Format("{0:N1}/s over {1:N1}s", totalChargeRate, totalChargeTime));
+                        windowContent.Add(new GuiElement() { type = "text", text = sb.ToString() });
+
+                        foreach (Vessel vessel in FlightGlobals.Vessels)
+                        {
+                            if (VesselHasActiveBeacon(vessel) && VesselInFlight(vessel))
+                            {
+                                Func<string, string> trimthe = s => s.StartsWith("The") ? s.Substring(3).Trim() : s;
+                                string targetBodyName = trimthe(vessel.orbit.referenceBody.name);
+                                double targetAltitude = vessel.orbit.altitude;
+
+                                double gravsource = GravitationalForcesAll(Source.orbit);
+                                double gravsourceprim = gravsource - GravitationalForce(Source.orbit);
+                                double gravdest = GravitationalForcesAll(vessel.orbit);
+                                double mass = Source.totalMass * 1000;
+                                double grav0 = Source.orbit.referenceBody.gravParameter;
+                                double radius0 = Source.orbit.referenceBody.Radius;
+
+                                double neededForce = (gravsource + gravdest) * mass;
+                                successProbability = Math.Min(1, Math.Max(0, totalGeneratedForce / neededForce));
+
+                                // Equations are shown on paper, image file in the repository.
+                                double B = 2 * radius0;
+                                double C = Square(radius0) - grav0 / ((totalGeneratedForce / mass) - gravdest - gravsourceprim);
+                                double delta = B * B - 4 * C;
+                                bool optimumExists = delta > 0;
+                                double optimumAltitude = (-B + Math.Sqrt(delta)) / 2;
+                                bool optimumBeyondSOI = optimumAltitude > Source.orbit.referenceBody.sphereOfInfluence;
+
+                                sb = new StringBuilder();
+                                sb.AppendEx("A vessel orbiting", String.Format("{0} at {1:N1}km", targetBodyName, targetAltitude / 1000));
+                                sb.AppendEx("Required force", String.Format("{0:N1}iN", neededForce));
+                                sb.AppendEx("Success probability", String.Format("{0:P0}", successProbability));
+                                sb.AppendEx("Optimum altitude", String.Format((optimumExists ? ("{0:N1}km" + (optimumBeyondSOI ? " (beyond SOI)" : "")) : "none (insufficient drives?)"), optimumAltitude / 1000));
+
+                                windowContent.Add(new GuiElement() { type = "text", text = sb.ToString() });
+                                windowContent.Add(new GuiElement() { type = "button", text = "Select", clicked = () => { FlightGlobals.fetch.SetVesselTarget(vessel); } });
+                            }
+                        }
+
+                    }
                 }
             }
             catch (Exception ex)
@@ -162,7 +228,6 @@ namespace ScienceFoundry.FTL
                 AppendLabel("ERROR IN COMPUTATION", "");
             }
 
-            UpdateAnimations();
             base.OnUpdate();
         }
 
@@ -206,50 +271,42 @@ namespace ScienceFoundry.FTL
             return x * x;
         }
 
-        private bool DestinationHasActiveBeacon
+        private bool JumpPossible
         {
-            get
+            get => Destination != null && VesselHasActiveBeacon(Destination) && VesselInFlight(Source) && VesselInFlight(Destination);
+        }
+
+        private bool VesselHasActiveBeacon(Vessel vessel)
+        {
+            if (vessel.loaded)
             {
-                if (Destination == null)
-                {
-                    return false;
-                }
-                if (Destination.loaded)
-                {
-                    foreach (Part p in Destination.parts)
-                        if (p.State != PartStates.DEAD)
-                            foreach (PartModule pm in p.Modules)
-                                if (pm.moduleName == "FTLBeaconModule")
-                                    if (((FTLBeaconModule)pm).beaconActivated)
-                                        return true;
-                    return false;
-                }
-                else
-                {
-                    foreach (ProtoPartSnapshot pps in Destination.protoVessel.protoPartSnapshots)
-                        foreach (ProtoPartModuleSnapshot m in pps.modules)
-                            if (m.moduleName == "FTLBeaconModule")
-                                if (Convert.ToBoolean(m.moduleValues.GetValue("beaconActivated")))
+                foreach (Part p in vessel.parts)
+                    if (p.State != PartStates.DEAD)
+                        foreach (PartModule pm in p.Modules)
+                            if (pm.moduleName == "FTLBeaconModule")
+                                if (((FTLBeaconModule)pm).beaconActivated)
                                     return true;
-                    return false;
-                }
+                return false;
+            }
+            else
+            {
+                foreach (ProtoPartSnapshot pps in vessel.protoVessel.protoPartSnapshots)
+                    foreach (ProtoPartModuleSnapshot m in pps.modules)
+                        if (m.moduleName == "FTLBeaconModule")
+                            if (Convert.ToBoolean(m.moduleValues.GetValue("beaconActivated")))
+                                return true;
+                return false;
             }
         }
 
-        private bool DestinationHasMode
+        private bool VesselInFlight(Vessel vessel)
         {
-            get
-            {
-                return 
-                    (Source.situation == Vessel.Situations.DOCKED ||
-                    Source.situation == Vessel.Situations.SUB_ORBITAL ||
-                    Source.situation == Vessel.Situations.ORBITING ||
-                    Source.situation == Vessel.Situations.ESCAPING) &&
-                    (Destination.situation == Vessel.Situations.DOCKED ||
-                    Destination.situation == Vessel.Situations.SUB_ORBITAL ||
-                    Destination.situation == Vessel.Situations.ORBITING ||
-                    Destination.situation == Vessel.Situations.ESCAPING);
-            }
+            return
+                vessel.situation == Vessel.Situations.FLYING ||
+                vessel.situation == Vessel.Situations.SUB_ORBITAL ||
+                vessel.situation == Vessel.Situations.ORBITING ||
+                vessel.situation == Vessel.Situations.ESCAPING ||
+                vessel.situation == Vessel.Situations.DOCKED;
         }
 
         [KSPEvent(guiActive = true, guiName = "Spin/Abort")]
@@ -263,10 +320,11 @@ namespace ScienceFoundry.FTL
             }
             else
             {
-                if (DestinationHasActiveBeacon) //  && DestinationHasMode
+                if (JumpPossible)
                 {
                     isSpinning = true;
                     totalChargeStored = 0d;
+                    isReady = false;
                     LogsManager.DisplayMsg("Spinning up FTL drives");
                     ToggleAnimations();
                 }
@@ -294,6 +352,44 @@ namespace ScienceFoundry.FTL
                 }
             }
         }
+
+        [KSPEvent(guiActive = true, guiName = "Show/Hide possible destinations")]
+        public void ToggleGUI()
+        {
+            windowVisible = !windowVisible;
+        }
+
+        void OnGUI()
+        {
+            if (windowVisible)
+            {
+                windowPosition = GUILayout.Window(523429, windowPosition, Display, "FTL possible destinations");
+            }
+        }
+
+        void Display(int windowId)
+        {
+            foreach (GuiElement e in windowContent)
+            {
+                GUILayout.BeginHorizontal();
+                if (e.type == "text")
+                {
+                    GUILayout.TextField(e.text);
+                }
+                if (e.type == "space")
+                {
+                    GUILayout.FlexibleSpace();
+                }
+                if (e.type == "button")
+                {
+                    if (GUILayout.Button(e.text, GUILayout.Height(30)))
+                        e.clicked.Invoke();
+                }
+                GUILayout.EndHorizontal();
+            }
+            GUI.DragWindow();
+        }
+
 
         public override string GetInfo()
         {
