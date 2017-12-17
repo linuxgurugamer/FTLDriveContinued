@@ -45,6 +45,7 @@ namespace ScienceFoundry.FTL
         {
             public string type;
             public string text;
+            public string color;
             public Action clicked;
         }
         public static bool windowVisible;
@@ -130,7 +131,7 @@ namespace ScienceFoundry.FTL
                         ClearLabels();
                         AppendLabel("Currently generated force", String.Format("{0:N1}iN", currentForce));
                         AppendLabel("Currently drained EC", String.Format("{0:N1}/s", currentDrain));
-                        AppendLabel("Success probability", String.Format("{0:P0}", successProbability));
+                        AppendLabel("Success probability", String.Format("{0:N0}%", successProbability / 100));
                     }
                     else if (JumpPossible)
                     {
@@ -161,7 +162,7 @@ namespace ScienceFoundry.FTL
                         AppendLabel("Total required EC", String.Format("{0:N1}/s over {1:N1}s", totalChargeRate, totalChargeTime));
                         AppendLabel("Target orbiting", String.Format("{0} at {1:N1}km", targetBodyName, targetAltitude / 1000));
                         AppendLabel("Required force", String.Format("{0:N1}iN", neededForce));
-                        AppendLabel("Success probability", String.Format("{0:P0}", successProbability));
+                        AppendLabel("Success probability", String.Format("{0:N0}%", successProbability / 100));
                         AppendLabel("Optimum altitude", String.Format((optimumExists ? ("{0:N1}km" + (optimumBeyondSOI ? " (beyond SOI)" : "")) : "none (insufficient drives?)"), optimumAltitude / 1000));
                     }
                     else
@@ -179,11 +180,12 @@ namespace ScienceFoundry.FTL
                         StringBuilder sb = new StringBuilder();
                         sb.AppendEx("Total generated force", String.Format("{0:N1}iN", totalGeneratedForce));
                         sb.AppendEx("Total required EC", String.Format("{0:N1}/s over {1:N1}s", totalChargeRate, totalChargeTime));
-                        windowContent.Add(new GuiElement() { type = "text", text = sb.ToString() });
+                        windowContent.Add(new GuiElement() { type = "button", text = sb.ToString(), color = null,
+                            clicked = () => { FlightGlobals.fetch.SetVesselTarget(null); } });
 
                         foreach (Vessel vessel in FlightGlobals.Vessels)
                         {
-                            if (VesselHasActiveBeacon(vessel) && VesselInFlight(vessel))
+                            if (vessel != Source && VesselHasActiveBeacon(vessel) && VesselInFlight(vessel))
                             {
                                 Func<string, string> trimthe = s => s.StartsWith("The") ? s.Substring(3).Trim() : s;
                                 string targetBodyName = trimthe(vessel.orbit.referenceBody.name);
@@ -201,7 +203,7 @@ namespace ScienceFoundry.FTL
 
                                 // Equations are shown on paper, image file in the repository.
                                 double B = 2 * radius0;
-                                double C = Square(radius0) - grav0 / ((totalGeneratedForce / mass) - gravdest - gravsourceprim);
+                                double C = (radius0 * radius0) - grav0 / ((totalGeneratedForce / mass) - gravdest - gravsourceprim);
                                 double delta = B * B - 4 * C;
                                 bool optimumExists = delta > 0;
                                 double optimumAltitude = (-B + Math.Sqrt(delta)) / 2;
@@ -210,11 +212,11 @@ namespace ScienceFoundry.FTL
                                 sb = new StringBuilder();
                                 sb.AppendEx("A vessel orbiting", String.Format("{0} at {1:N1}km", targetBodyName, targetAltitude / 1000));
                                 sb.AppendEx("Required force", String.Format("{0:N1}iN", neededForce));
-                                sb.AppendEx("Success probability", String.Format("{0:P0}", successProbability));
+                                sb.AppendEx("Success probability", String.Format("{0:N0}%", successProbability / 100));
                                 sb.AppendEx("Optimum altitude", String.Format((optimumExists ? ("{0:N1}km" + (optimumBeyondSOI ? " (beyond SOI)" : "")) : "none (insufficient drives?)"), optimumAltitude / 1000));
-
-                                windowContent.Add(new GuiElement() { type = "text", text = sb.ToString() });
-                                windowContent.Add(new GuiElement() { type = "button", text = "Select", clicked = () => { FlightGlobals.fetch.SetVesselTarget(vessel); } });
+                                sb.AppendEx(vessel == Destination ? @"     \ - - - - - - Selected target - - - - - - /     " : @"     \ - - - - - - Click to select - - - - - - /     ");
+                                windowContent.Add(new GuiElement() { type = "button", text = sb.ToString(), color = (vessel == Destination ? "green" : null),
+                                    clicked = () => { FlightGlobals.fetch.SetVesselTarget(vessel); } });
                             }
                         }
 
@@ -273,7 +275,7 @@ namespace ScienceFoundry.FTL
 
         private bool JumpPossible
         {
-            get => Destination != null && VesselHasActiveBeacon(Destination) && VesselInFlight(Source) && VesselInFlight(Destination);
+            get => Destination != null && Destination != Source && VesselHasActiveBeacon(Destination) && VesselInFlight(Source) && VesselInFlight(Destination);
         }
 
         private bool VesselHasActiveBeacon(Vessel vessel)
@@ -369,12 +371,20 @@ namespace ScienceFoundry.FTL
 
         void Display(int windowId)
         {
+            GUIStyle normal = new GUIStyle(GUI.skin.textField);
+            normal.normal.textColor = normal.hover.textColor = GUI.skin.textField.normal.textColor;
+            GUIStyle yellow = new GUIStyle(GUI.skin.textField);
+            yellow.normal.textColor = yellow.hover.textColor = Color.yellow;
+            GUIStyle green = new GUIStyle(GUI.skin.textField);
+            green.normal.textColor = green.hover.textColor = Color.green;
+
             foreach (GuiElement e in windowContent)
             {
                 GUILayout.BeginHorizontal();
                 if (e.type == "text")
                 {
-                    GUILayout.TextField(e.text);
+                    GUIStyle s = e.color == "yellow" ? yellow : e.color == "green" ? green : normal;
+                    GUILayout.TextField(e.text, s);
                 }
                 if (e.type == "space")
                 {
@@ -382,14 +392,14 @@ namespace ScienceFoundry.FTL
                 }
                 if (e.type == "button")
                 {
-                    if (GUILayout.Button(e.text, GUILayout.Height(30)))
+                    GUIStyle s = e.color == "yellow" ? yellow : e.color == "green" ? green : normal;
+                    if (GUILayout.Button(e.text, s))
                         e.clicked.Invoke();
                 }
                 GUILayout.EndHorizontal();
             }
             GUI.DragWindow();
         }
-
 
         public override string GetInfo()
         {
