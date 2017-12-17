@@ -33,85 +33,98 @@ namespace ScienceFoundry.FTL
 
         public void AppendLabel(string name, string value)
         {
-            if (statuscount == 0)
+            switch (statuscount)
             {
-                Fields["status01"].guiActive = true;
-                Fields["status01"].guiActiveEditor = true;
-                Fields["status01"].guiName = name;
-                Fields.SetValue("status01", value);
-                statuscount++;
-            }
-            else if (statuscount == 1)
-            {
-                Fields["status02"].guiActive = true;
-                Fields["status02"].guiActiveEditor = true;
-                Fields["status02"].guiName = name;
-                Fields.SetValue("status02", value);
-                statuscount++;
-            }
-            else if (statuscount == 2)
-            {
-                Fields["status03"].guiActive = true;
-                Fields["status03"].guiActiveEditor = true;
-                Fields["status03"].guiName = name;
-                Fields.SetValue("status03", value);
-                statuscount++;
-            }
-            else if (statuscount == 3)
-            {
-                Fields["status04"].guiActive = true;
-                Fields["status04"].guiActiveEditor = true;
-                Fields["status04"].guiName = name;
-                Fields.SetValue("status04", value);
-                statuscount++;
-            }
-            else if (statuscount == 4)
-            {
-                Fields["status05"].guiActive = true;
-                Fields["status05"].guiActiveEditor = true;
-                Fields["status05"].guiName = name;
-                Fields.SetValue("status05", value);
-                statuscount++;
-            }
-            else if (statuscount == 5)
-            {
-                Fields["status06"].guiActive = true;
-                Fields["status06"].guiActiveEditor = true;
-                Fields["status06"].guiName = name;
-                Fields.SetValue("status06", value);
-                statuscount++;
-            }
-            else if (statuscount == 6)
-            {
-                Fields["status07"].guiActive = true;
-                Fields["status07"].guiActiveEditor = true;
-                Fields["status07"].guiName = name;
-                Fields.SetValue("status07", value);
-                statuscount++;
-            }
-            else if (statuscount == 7)
-            {
-                Fields["status08"].guiActive = true;
-                Fields["status08"].guiActiveEditor = true;
-                Fields["status08"].guiName = name;
-                Fields.SetValue("status08", value);
-                statuscount++;
-            }
-            else if (statuscount == 8)
-            {
-                Fields["status09"].guiActive = true;
-                Fields["status09"].guiActiveEditor = true;
-                Fields["status09"].guiName = name;
-                Fields.SetValue("status09", value);
-                statuscount++;
-            }
-            else if (statuscount == 9)
-            {
-                Fields["status10"].guiActive = true;
-                Fields["status10"].guiActiveEditor = true;
-                Fields["status10"].guiName = name;
-                Fields.SetValue("status10", value);
-                statuscount++;
+                case 0:
+                    {
+                        Fields["status01"].guiActive = true;
+                        Fields["status01"].guiActiveEditor = true;
+                        Fields["status01"].guiName = name;
+                        Fields.SetValue("status01", value);
+                        statuscount++;
+                        break;
+                    }
+                case 1:
+                    {
+                        Fields["status02"].guiActive = true;
+                        Fields["status02"].guiActiveEditor = true;
+                        Fields["status02"].guiName = name;
+                        Fields.SetValue("status02", value);
+                        statuscount++;
+                        break;
+                    }
+                case 2:
+                    {
+                        Fields["status03"].guiActive = true;
+                        Fields["status03"].guiActiveEditor = true;
+                        Fields["status03"].guiName = name;
+                        Fields.SetValue("status03", value);
+                        statuscount++;
+                        break;
+                    }
+                case 3:
+                    {
+                        Fields["status04"].guiActive = true;
+                        Fields["status04"].guiActiveEditor = true;
+                        Fields["status04"].guiName = name;
+                        Fields.SetValue("status04", value);
+                        statuscount++;
+                        break;
+                    }
+                case 4:
+                    {
+                        Fields["status05"].guiActive = true;
+                        Fields["status05"].guiActiveEditor = true;
+                        Fields["status05"].guiName = name;
+                        Fields.SetValue("status05", value);
+                        statuscount++;
+                        break;
+                    }
+                case 5:
+                    {
+                        Fields["status06"].guiActive = true;
+                        Fields["status06"].guiActiveEditor = true;
+                        Fields["status06"].guiName = name;
+                        Fields.SetValue("status06", value);
+                        statuscount++;
+                        break;
+                    }
+                case 6:
+                    {
+                        Fields["status07"].guiActive = true;
+                        Fields["status07"].guiActiveEditor = true;
+                        Fields["status07"].guiName = name;
+                        Fields.SetValue("status07", value);
+                        statuscount++;
+                        break;
+                    }
+                case 7:
+                    {
+                        Fields["status08"].guiActive = true;
+                        Fields["status08"].guiActiveEditor = true;
+                        Fields["status08"].guiName = name;
+                        Fields.SetValue("status08", value);
+                        statuscount++;
+                        break;
+                    }
+                case 8:
+                    {
+                        Fields["status09"].guiActive = true;
+                        Fields["status09"].guiActiveEditor = true;
+                        Fields["status09"].guiName = name;
+                        Fields.SetValue("status09", value);
+                        statuscount++;
+                        break;
+                    }
+                case 9:
+                    {
+                        Fields["status10"].guiActive = true;
+                        Fields["status10"].guiActiveEditor = true;
+                        Fields["status10"].guiName = name;
+                        Fields.SetValue("status10", value);
+                        statuscount++;
+                        break;
+                    }
             }
         }
 
