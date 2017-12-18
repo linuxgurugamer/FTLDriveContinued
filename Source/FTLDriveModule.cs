@@ -136,7 +136,7 @@ namespace ScienceFoundry.FTL
                         ClearLabels();
                         AppendLabel("Currently generated force", String.Format("{0:N1}iN", currentForce));
                         AppendLabel("Currently drained EC", String.Format("{0:N1}/s", currentDrain));
-                        AppendLabel("Success probability", String.Format("{0:N0}%", successProbability / 100));
+                        AppendLabel("Success probability", String.Format("{0:N0}%", successProbability * 100));
                     }
                     else if (JumpPossible)
                     {
@@ -167,7 +167,7 @@ namespace ScienceFoundry.FTL
                         AppendLabel("Total required EC", String.Format("{0:N1}/s over {1:N1}s", totalChargeRate, totalChargeTime));
                         AppendLabel("Target orbiting", String.Format("{0} at {1:N1}km", targetBodyName, targetAltitude / 1000));
                         AppendLabel("Required force", String.Format("{0:N1}iN", neededForce));
-                        AppendLabel("Success probability", String.Format("{0:N0}%", successProbability / 100));
+                        AppendLabel("Success probability", String.Format("{0:N0}%", successProbability * 100));
                         AppendLabel("Optimum altitude", String.Format((optimumExists ? ("{0:N1}km" + (optimumBeyondSOI ? " (beyond SOI)" : "")) : "none (insufficient drives?)"), optimumAltitude / 1000));
                     }
                     else
@@ -217,7 +217,7 @@ namespace ScienceFoundry.FTL
                                 sb = new StringBuilder();
                                 sb.AppendEx("A vessel orbiting", String.Format("{0} at {1:N1}km", targetBodyName, targetAltitude / 1000));
                                 sb.AppendEx("Required force", String.Format("{0:N1}iN", neededForce));
-                                sb.AppendEx("Success probability", String.Format("{0:N0}%", successProbability / 100));
+                                sb.AppendEx("Success probability", String.Format("{0:N0}%", successProbability * 100));
                                 sb.AppendEx("Optimum altitude", String.Format((optimumExists ? ("{0:N1}km" + (optimumBeyondSOI ? " (beyond SOI)" : "")) : "none (insufficient drives?)"), optimumAltitude / 1000));
                                 sb.AppendEx(vessel == Destination ? @"     \ - - - - - - Selected target - - - - - - /     " : @"     \ - - - - - - Click to select - - - - - - /     ");
                                 windowContent.Add(new GuiElement() { type = "button", text = sb.ToString(), color = (vessel == Destination ? "green" : null),
