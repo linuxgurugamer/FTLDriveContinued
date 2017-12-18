@@ -65,16 +65,21 @@ namespace ScienceFoundry.FTL
 
             chargeCapacity = chargeRate * chargeTime;
 
-            // NOTE: sufficient for restart while spinning?
-            isSpinning = false;
-            // NOTE: hides GUI on reload
-            windowVisible = false;
             const int WIDTH = 250;
             const int HEIGHT = 250;
             windowPosition = new Rect((Screen.width - WIDTH) / 2, (Screen.height - HEIGHT) / 2, WIDTH, HEIGHT);
             windowContent = new List<GuiElement>();
 
             base.OnStart(state);
+        }
+
+        public override void OnLoad(ConfigNode node)
+        {
+            // NOTE: stops spinning and hides GUI on reload/switch vessel/etc
+            isSpinning = false;
+            windowVisible = false;
+
+            base.OnLoad(node);
         }
 
         public override void OnUpdate()
