@@ -73,7 +73,7 @@ namespace ScienceFoundry.FTL
 
             availableDrives = FindAllSourceDrives.ToArray();
 
-            totalGeneratedForce = availableDrives.Select(drv => drv.generatedForce).OrderByDescending(x => x).Take(35).Select((f,i) => f * Math.Pow(1.4, -i)).Sum();
+            totalGeneratedForce = availableDrives.Select(drv => drv.generatedForce).OrderByDescending(x => x).Take(25).Select((f,i) => f * Math.Pow(1.2, -i)).Sum();
             totalChargeRate = availableDrives.Select(drv => drv.chargeRate).Sum();
             totalChargeCapacity = availableDrives.Select(drv => drv.chargeRate * drv.chargeTime).Sum();
             // Total charge time is NOT the sum of individual charge rates, because different drives can have different charge times.
