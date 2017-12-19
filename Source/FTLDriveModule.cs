@@ -11,10 +11,6 @@ namespace ScienceFoundry.FTL
     {
         //------------------------------ PRECOMPUTATION (RUN ONCE) --------------------------------
 
-        // precomputed, but Math.Pow() is only 50 nanosec/call
-        // at -10 its small but significant 0.03, at -35 its negligible 0.000007
-        private static double[] MathPow = Enumerable.Range(0, 35).Select(i => Math.Pow(1.4, -i)).ToArray();
-
         //------------------------------ FIELDS ---------------------------------------------------
 
         // data loaded from CFG, constants after loading
@@ -24,8 +20,6 @@ namespace ScienceFoundry.FTL
         public double chargeRate;
         [KSPField]
         public double chargeTime;
-        [KSPField]
-        public double chargeCapacity;
 
         // used for displaying current status, get recomputed on occasion, static because only one active vessel
         public static FTLDriveModule[] availableDrives;
@@ -63,8 +57,6 @@ namespace ScienceFoundry.FTL
             animationStages = animationNames.Split(',').Select(a => a.Trim()).ToArray();
             SetUpAnimation(animationStages.First(), this.part, WrapMode.Loop);
 
-            chargeCapacity = chargeRate * chargeTime;
-
             const int WIDTH = 250;
             const int HEIGHT = 250;
             windowPosition = new Rect((Screen.width - WIDTH) / 2, (Screen.height - HEIGHT) / 2, WIDTH, HEIGHT);
@@ -79,6 +71,14 @@ namespace ScienceFoundry.FTL
             isSpinning = false;
             windowVisible = false;
 
+            availableDrives = FindAllSourceDrives.ToArray();
+
+            totalGeneratedForce = availableDrives.Select(drv => drv.generatedForce).OrderByDescending(x => x).Take(35).Select((f,i) => f * Math.Pow(1.4, -i)).Sum();
+            totalChargeRate = availableDrives.Select(drv => drv.chargeRate).Sum();
+            totalChargeCapacity = availableDrives.Select(drv => drv.chargeRate * drv.chargeTime).Sum();
+            // Total charge time is NOT the sum of individual charge rates, because different drives can have different charge times.
+            totalChargeTime = totalChargeCapacity / totalChargeRate;
+
             base.OnLoad(node);
         }
 
@@ -92,17 +92,10 @@ namespace ScienceFoundry.FTL
 
             try
             {
-                availableDrives = FindAllSourceDrives.ToArray();
-
-                totalGeneratedForce = availableDrives.Select(drv => drv.generatedForce).OrderByDescending(x => x).Take(35).Select((f, i) => f * MathPow[i]).Sum();
-                totalChargeRate = availableDrives.Select(drv => drv.chargeRate).Sum();
-                totalChargeCapacity = availableDrives.Select(drv => drv.chargeCapacity).Sum();
-                // Total charge time is NOT the sum of individual charge rates, because different drives can have different charge times.
-                totalChargeTime = totalChargeCapacity / totalChargeRate;
 
                 if (HighLogic.LoadedSceneIsEditor)
                 {
-                    // NOTE: ActiveVessel is not used in Editor mode, making total force/ec uncomputable.
+                    // NOTE: ActiveVessel is not used in Editor mode, EditorLogic.ship doesnt work?
                 }
 
                 if (HighLogic.LoadedSceneIsFlight)
