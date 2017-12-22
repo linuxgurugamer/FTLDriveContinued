@@ -11,10 +11,6 @@ namespace ScienceFoundry.FTL
     {
         //------------------------------ PRECOMPUTATION (RUN ONCE) --------------------------------
 
-        // precomputed, but Math.Pow() is only 50 nanosec/call
-        // at -10 its small but significant 0.03, at -35 its negligible 0.000007
-        private static double[] MathPow = Enumerable.Range(0, 35).Select(i => Math.Pow(1.4, -i)).ToArray();
-
         //------------------------------ FIELDS ---------------------------------------------------
 
         // data loaded from CFG, constants after loading
@@ -24,8 +20,6 @@ namespace ScienceFoundry.FTL
         public double chargeRate;
         [KSPField]
         public double chargeTime;
-        [KSPField]
-        public double chargeCapacity;
 
         // used for displaying current status, get recomputed on occasion, static because only one active vessel
         public static FTLDriveModule[] availableDrives;
@@ -63,18 +57,29 @@ namespace ScienceFoundry.FTL
             animationStages = animationNames.Split(',').Select(a => a.Trim()).ToArray();
             SetUpAnimation(animationStages.First(), this.part, WrapMode.Loop);
 
-            chargeCapacity = chargeRate * chargeTime;
-
-            // NOTE: sufficient for restart while spinning?
-            isSpinning = false;
-            // NOTE: hides GUI on reload
-            windowVisible = false;
             const int WIDTH = 250;
             const int HEIGHT = 250;
             windowPosition = new Rect((Screen.width - WIDTH) / 2, (Screen.height - HEIGHT) / 2, WIDTH, HEIGHT);
             windowContent = new List<GuiElement>();
 
             base.OnStart(state);
+        }
+
+        public override void OnLoad(ConfigNode node)
+        {
+            // NOTE: stops spinning and hides GUI on reload/switch vessel/etc
+            isSpinning = false;
+            windowVisible = false;
+
+            availableDrives = FindAllSourceDrives.ToArray();
+
+            totalGeneratedForce = availableDrives.Select(drv => drv.generatedForce).OrderByDescending(x => x).Take(25).Select((f,i) => f * Math.Pow(1.2, -i)).Sum();
+            totalChargeRate = availableDrives.Select(drv => drv.chargeRate).Sum();
+            totalChargeCapacity = availableDrives.Select(drv => drv.chargeRate * drv.chargeTime).Sum();
+            // Total charge time is NOT the sum of individual charge rates, because different drives can have different charge times.
+            totalChargeTime = totalChargeCapacity / totalChargeRate;
+
+            base.OnLoad(node);
         }
 
         public override void OnUpdate()
@@ -87,17 +92,10 @@ namespace ScienceFoundry.FTL
 
             try
             {
-                availableDrives = FindAllSourceDrives.ToArray();
-
-                totalGeneratedForce = availableDrives.Select(drv => drv.generatedForce).OrderByDescending(x => x).Take(35).Select((f, i) => f * MathPow[i]).Sum();
-                totalChargeRate = availableDrives.Select(drv => drv.chargeRate).Sum();
-                totalChargeCapacity = availableDrives.Select(drv => drv.chargeCapacity).Sum();
-                // Total charge time is NOT the sum of individual charge rates, because different drives can have different charge times.
-                totalChargeTime = totalChargeCapacity / totalChargeRate;
 
                 if (HighLogic.LoadedSceneIsEditor)
                 {
-                    // NOTE: ActiveVessel is not used in Editor mode, making total force/ec uncomputable.
+                    // NOTE: ActiveVessel is not used in Editor mode, EditorLogic.ship doesnt work?
                 }
 
                 if (HighLogic.LoadedSceneIsFlight)
@@ -131,7 +129,7 @@ namespace ScienceFoundry.FTL
                         ClearLabels();
                         AppendLabel("Currently generated force", String.Format("{0:N1}iN", currentForce));
                         AppendLabel("Currently drained EC", String.Format("{0:N1}/s", currentDrain));
-                        AppendLabel("Success probability", String.Format("{0:N0}%", successProbability / 100));
+                        AppendLabel("Success probability", String.Format("{0:N0}%", successProbability * 100));
                     }
                     else if (JumpPossible)
                     {
@@ -162,7 +160,7 @@ namespace ScienceFoundry.FTL
                         AppendLabel("Total required EC", String.Format("{0:N1}/s over {1:N1}s", totalChargeRate, totalChargeTime));
                         AppendLabel("Target orbiting", String.Format("{0} at {1:N1}km", targetBodyName, targetAltitude / 1000));
                         AppendLabel("Required force", String.Format("{0:N1}iN", neededForce));
-                        AppendLabel("Success probability", String.Format("{0:N0}%", successProbability / 100));
+                        AppendLabel("Success probability", String.Format("{0:N0}%", successProbability * 100));
                         AppendLabel("Optimum altitude", String.Format((optimumExists ? ("{0:N1}km" + (optimumBeyondSOI ? " (beyond SOI)" : "")) : "none (insufficient drives?)"), optimumAltitude / 1000));
                     }
                     else
@@ -212,7 +210,7 @@ namespace ScienceFoundry.FTL
                                 sb = new StringBuilder();
                                 sb.AppendEx("A vessel orbiting", String.Format("{0} at {1:N1}km", targetBodyName, targetAltitude / 1000));
                                 sb.AppendEx("Required force", String.Format("{0:N1}iN", neededForce));
-                                sb.AppendEx("Success probability", String.Format("{0:N0}%", successProbability / 100));
+                                sb.AppendEx("Success probability", String.Format("{0:N0}%", successProbability * 100));
                                 sb.AppendEx("Optimum altitude", String.Format((optimumExists ? ("{0:N1}km" + (optimumBeyondSOI ? " (beyond SOI)" : "")) : "none (insufficient drives?)"), optimumAltitude / 1000));
                                 sb.AppendEx(vessel == Destination ? @"     \ - - - - - - Selected target - - - - - - /     " : @"     \ - - - - - - Click to select - - - - - - /     ");
                                 windowContent.Add(new GuiElement() { type = "button", text = sb.ToString(), color = (vessel == Destination ? "green" : null),
