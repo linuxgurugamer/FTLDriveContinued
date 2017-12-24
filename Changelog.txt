@@ -61,12 +61,14 @@ beta (planned 0.2)
 	Uses TweakScale mod (2x drive has 2x force but 8x mass and 8x cost).
 
 FixedUpdate changed back to Update
-OnStart changed bck to Start
+OnStart changed back to Start
 Calculations of the totalGeneratedforce, totalChargeRate an, totalChargeCapacity and totalChargeTime into a separate function
-Drives now keep spinning if vessel switched
 Added back visual message when jump not possible
 Implemented code to hide Jump button when drive not spinning
 Added context info in editor
+	Source body is changable by clicking the left/right arrows
+	Starting orbit is configurable with slider, going from just above the atmosphere to the edge of the SOI
+Added "x" to allow the window to be closed
 Changed FindAllSourceDrives to function, so it can be used both in Editor and in Flight
 Added settings window
 	driveStopsUponVesselSwitch
@@ -74,4 +76,4 @@ Added settings window
 	multipleDriveExponent = 1.4f
 Hide the Execute Jump button after a jump is executed
 Removed double debug.log line in LogsManager
-Added code to save window position, both in Editor and in Flight (seperate values)
+Added code to save window position, both in Editor and in Flight (separate values)
