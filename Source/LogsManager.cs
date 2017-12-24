@@ -28,8 +28,6 @@ namespace ScienceFoundry.FTL
             string msg = "[" + KSPUtil.PrintTimeStamp(FlightLogger.met) + "] FTLDriveContinued: " + string.Join("", msgparts.Select(o => o.ToString()).ToArray());
 
             Debug.Log(msg);
-            UnityEngine.Debug.Log(msg);
         }
-
     }
 }

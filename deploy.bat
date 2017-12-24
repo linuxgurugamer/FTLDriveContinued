@@ -17,5 +17,3 @@ copy /Y "%1%2" "%GAMEDATA%\%GAMEDIR%\Plugins"
 copy /Y %VERSIONFILE% %GAMEDATA%\%GAMEDIR%
 
 xcopy /y /s /I %GAMEDATA%\%GAMEDIR% "%H%\GameData\%GAMEDIR%"
-
-pause
