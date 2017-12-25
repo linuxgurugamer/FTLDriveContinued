@@ -518,12 +518,20 @@ namespace ScienceFoundry.FTL
 
         private bool VesselInFlight(Vessel vessel)
         {
+            // This is the same thing as below, but is slightly faster, 3 instead of 5, also, if it		
+            // fails one of the first, it doesn't check the following		
+            return
+                Source.situation != Vessel.Situations.LANDED &&
+                Source.situation != Vessel.Situations.SPLASHED &&
+                Source.situation != Vessel.Situations.PRELAUNCH;
+#if false
             return
                 vessel.situation == Vessel.Situations.FLYING ||
                 vessel.situation == Vessel.Situations.SUB_ORBITAL ||
                 vessel.situation == Vessel.Situations.ORBITING ||
                 vessel.situation == Vessel.Situations.ESCAPING ||
                 vessel.situation == Vessel.Situations.DOCKED;
+#endif
         }
 
         private bool JumpPossible(bool display = true)
@@ -660,8 +668,8 @@ namespace ScienceFoundry.FTL
         {
             if (windowVisible)
             {
-                windowPosition = GUILayout.Window(523429, windowPosition, Display, "FTL possible destinations");               
-            }            
+                windowPosition = GUILayout.Window(523429, windowPosition, Display, "FTL possible destinations");
+            }
         }
 
 
@@ -673,7 +681,7 @@ namespace ScienceFoundry.FTL
             yellow.normal.textColor = yellow.hover.textColor = Color.yellow;
             GUIStyle green = new GUIStyle(GUI.skin.textField);
             green.normal.textColor = green.hover.textColor = Color.green;
-            
+
             Vector2 buttonSize = new Vector2(25f, 20f);
             if (GUI.Button(new Rect(windowPosition.width - 23f, 2f, 18f, 13f), "x"))
             {

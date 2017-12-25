@@ -9,7 +9,8 @@ using UnityEngine;
 // Class used to test the speed of the various methods used to concatenate strings together
 // IMPORTANT: file not included in project, so it does not run
 //
-namespace ScienceFoundry.FTL
+#if DEBUG
+namespace StringTest
 {
     [KSPAddon(KSPAddon.Startup.SpaceCentre, true)]
     public class StringTest : MonoBehaviour
@@ -42,8 +43,21 @@ namespace ScienceFoundry.FTL
                 var result = builder.ToString();
             }
         }
+        void TestSTringBuilder2(int multiplier)
+        {
+            for (int i = 0; i < multiplier; i++)
+            {
+                var builder = new StringBuilder();
+                builder.Append("This is test #");
+                builder.Append(i);
+                builder.Append(" with a result of ");
+                builder.Append(i);
+                var result = builder.ToString();
+            }
+        }
 
-        static List<double> data = Enumerable.Range(0,1000000).Cast<double>().ToList();
+        //        static List<double> data = Enumerable.Range(0, 1000000).Cast<double>().ToList();
+        List<double> data;
 
         void TestFor(int multiplier)
         {
@@ -77,7 +91,7 @@ namespace ScienceFoundry.FTL
             timer.Stop();
             long other = GC.GetTotalMemory(true);
 
-            string result = String.Format("{0}  Time: {1} ms/1_000_000calls , Memory: {2}/{3}/{4}",
+            string result = String.Format("{0}  Time: {1} ms/1_000_000 calls , Memory: {2}/{3}/{4}",
                 name, timer.ElapsedMilliseconds, start, stop, other);
             UnityEngine.Debug.Log("Timing results: " + result);
         }
@@ -87,6 +101,7 @@ namespace ScienceFoundry.FTL
             TimeTest("Operator +", multiplier, TestConcatenation);
             TimeTest("String.Format", multiplier, TestFormat);
             TimeTest("StringBuilder", multiplier, TestSTringBuilder);
+            TimeTest("StringBuilder 2", multiplier, TestSTringBuilder2);
 
             TimeTest("For loop", multiplier, TestFor);
             TimeTest("Foreach loop", multiplier, TestForeach);
@@ -95,8 +110,13 @@ namespace ScienceFoundry.FTL
         void Start()
         {
             UnityEngine.Debug.Log("Beginning timing tests");
+            data = new List<double>();
+            for (double i = 0; i < 1000000; i++)
+                data.Add(i);
+                //Enumerable.Range(0, 1000000).Cast<double>().ToList();
             DoTests(1000000);
             UnityEngine.Debug.Log("Completed timing tests");
         }
     }
 }
+#endif

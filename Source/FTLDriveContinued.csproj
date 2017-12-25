@@ -44,6 +44,7 @@
     <Compile Include="Settings.cs" />
     <Compile Include="SoundManager.cs" />
     <Compile Include="StringBuilderExt.cs" />
+    <Compile Include="StringTest.cs" />
     <Compile Include="VesselExt.cs" />
     <Compile Include="LogsManager.cs" />
   </ItemGroup>
