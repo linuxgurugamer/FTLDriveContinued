@@ -15,6 +15,11 @@ namespace StringTest
     [KSPAddon(KSPAddon.Startup.SpaceCentre, true)]
     public class StringTest : MonoBehaviour
     {
+        int i = 0;
+        void TestDelegate(int multiplier)
+        {
+            i++; // so that there is something to do in here 
+        }
         void TestConcatenation(int multiplier)
         {
             for (int i = 0; i < multiplier; i++)
@@ -98,6 +103,7 @@ namespace StringTest
 
         public void DoTests(int multiplier)
         {
+            TimeTest("Delegate", multiplier, TestDelegate);
             TimeTest("Operator +", multiplier, TestConcatenation);
             TimeTest("String.Format", multiplier, TestFormat);
             TimeTest("StringBuilder", multiplier, TestSTringBuilder);
