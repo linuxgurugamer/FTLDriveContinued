@@ -27,7 +27,7 @@
 1:FTLDriveContinued, FTLDriveContinued.version
 
 # 2:PROJNAME, PROJFILE, VERSIONFILE, PLUGINSFOLDER
-2:FTLDriveContinued,FTLDriveContinued/FTLDriveContinued.csproj,FTLDriveContinued.version,GameData/FTLDriveContinued/Plugins
+2:FTLDriveContinued,Source/FTLDriveContinued.csproj,FTLDriveContinued.version,GameData/FTLDriveContinued/Plugins
 
 # 3:SOURCEFILE, DESTDIR
 3:FTLDriveContinued.version,GameData/FTLDriveContinued
