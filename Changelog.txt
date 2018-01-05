@@ -54,6 +54,8 @@ unknown
 	Added RSS patch, thanks @Jimbodiah
 
 0.2.0
+	Thanks to github user @arekbulski for the majority of these changes
+
 	Target vessel is also FTL target. Can select targets using the window or Engineer Redux mod.
 	Optimum altitude is min altitude over current body that has 100% success provided EC supply.	
 	Analysis window shows all beacons and their force requirements and optimal altitudes.
