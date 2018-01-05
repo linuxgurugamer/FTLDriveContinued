@@ -72,7 +72,7 @@ namespace ScienceFoundry.FTL
         private string[] animationStages = { };
 
 
-        public void SetUpAnimation(string animationName, Part part, WrapMode wrapMode)
+        void SetUpAnimation(string animationName, Part part, WrapMode wrapMode)
         {
             foreach (var animation in part.FindModelAnimators(animationName))
             {
@@ -111,8 +111,13 @@ namespace ScienceFoundry.FTL
             string activeAnim = animationStages[animStage];
             int curAnimStage = animStage;
 
-            foreach (var anim in part.FindModelAnimators(activeAnim))
+            var mas = part.FindModelAnimators(activeAnim).ToList();
+            for (int i = 0; i < mas.Count;  i++)
             {
+                var anim = mas[i];
+            //}
+            //foreach (var anim in part.FindModelAnimators(activeAnim))
+            //{
                 if (anim != null)
                 {
                     float origSpd = anim[activeAnim].speed;

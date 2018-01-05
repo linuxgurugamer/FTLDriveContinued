@@ -162,6 +162,8 @@ namespace ScienceFoundry.FTL
 
         public override void OnLoad(ConfigNode node)
         {
+            if (!HighLogic.LoadedSceneIsFlight && !HighLogic.LoadedSceneIsEditor)
+                return;
             // NOTE: stops spinning and hides GUI on reload/switch vessel/etc
             if (HighLogic.CurrentGame.Parameters.CustomParams<FTLSettings>().driveStopsUponVesselSwitch)
                 isSpinning = false;
@@ -216,8 +218,12 @@ namespace ScienceFoundry.FTL
                         color = null,
                     });
 
-                    foreach (ProtoVessel vessel in HighLogic.CurrentGame.flightState.protoVessels)
+                    for (int i = 0; i < HighLogic.CurrentGame.flightState.protoVessels.Count(); i++)
                     {
+                        ProtoVessel vessel = HighLogic.CurrentGame.flightState.protoVessels[i];
+                    //}
+                    //foreach (ProtoVessel vessel in HighLogic.CurrentGame.flightState.protoVessels)
+                    //{
                         Vessel v = new Vessel();
                         v.loaded = false;
                         v.protoVessel = vessel;
@@ -390,8 +396,12 @@ namespace ScienceFoundry.FTL
                             clicked = () => { FlightGlobals.fetch.SetVesselTarget(null); },
                         });
 
-                        foreach (Vessel vessel in FlightGlobals.Vessels)
+                        for (int i = 0; i < FlightGlobals.Vessels.Count; i++)
                         {
+                            Vessel vessel = FlightGlobals.Vessels[i];
+                        //}
+                        //foreach (Vessel vessel in FlightGlobals.Vessels)
+                        //{
                             if (vessel != Source && VesselHasActiveBeacon(vessel) && VesselInFlight(vessel))
                             {
                                 Func<string, string> trimthe = s => s.StartsWith("The") ? s.Substring(3).Trim() : s;
@@ -461,11 +471,21 @@ namespace ScienceFoundry.FTL
 
         private IEnumerable<FTLDriveModule> FindAllSourceDrives(List<Part> parts)
         {
-            foreach (Part p in parts)
+            for (int i = 0; i < parts.Count(); i++)
+            {
+                Part p = parts[i];
+           
+                //foreach (Part p in parts)
                 if (p.State != PartStates.DEAD)
-                    foreach (PartModule pm in p.Modules)
+                    for (int i2 = 0; i2 < p.Modules.Count; i2++)
+                    {
+                        PartModule pm = p.Modules[i2];
+
+                        //foreach (PartModule pm in p.Modules)
                         if (pm.moduleName == "FTLDriveModule")
                             yield return (FTLDriveModule)pm;
+                    }
+            }
         }
 
         // following used in flight
@@ -488,8 +508,12 @@ namespace ScienceFoundry.FTL
         {
             if (body == null) return 0;
             double amt = 0;
-            foreach (var br in bodiesList)
+            for (int i = 0; i < bodiesList.Count; i++)
             {
+                FTLDriveModule.BodyRef br = bodiesList[i];
+            //}
+            //foreach (var br in bodiesList)
+            //{
                 if (body.name == br.body.name)
                 {
                     amt = GravitationalForcesAll(br.parent, br.semiMajorAxis);
@@ -574,21 +598,41 @@ namespace ScienceFoundry.FTL
         {
             if (vessel.loaded)
             {
-                foreach (Part p in vessel.parts)
+                for (int i = 0; i < vessel.parts.Count(); i++)
+                {
+                    Part p = vessel.parts[i];
+
+                    //foreach (Part p in vessel.parts)
                     if (p.State != PartStates.DEAD)
-                        foreach (PartModule pm in p.Modules)
-                            if (pm.moduleName == "FTLBeaconModule")
-                                if (((FTLBeaconModule)pm).beaconActivated)
-                                    return true;
+                        for (int i2 = 0; i2 < p.Modules.Count; i2++)
+                        {
+                            PartModule pm = p.Modules[i2];
+
+                            //foreach (PartModule pm in p.Modules)
+                                if (pm.moduleName == "FTLBeaconModule")
+                                    if (((FTLBeaconModule)pm).beaconActivated)
+                                        return true;
+                        }
+                }
                 return false;
             }
             else
             {
-                foreach (ProtoPartSnapshot pps in vessel.protoVessel.protoPartSnapshots)
-                    foreach (ProtoPartModuleSnapshot m in pps.modules)
+                for (int i = 0; i < vessel.protoVessel.protoPartSnapshots.Count(); i++)
+                {
+                    ProtoPartSnapshot pps = vessel.protoVessel.protoPartSnapshots[i];
+
+                    //foreach (ProtoPartSnapshot pps in vessel.protoVessel.protoPartSnapshots)
+                    for (int i2 = 0; i2 < pps.modules.Count(); i2++)
+                    {
+                        ProtoPartModuleSnapshot m = pps.modules[i2];
+
+                        //foreach (ProtoPartModuleSnapshot m in pps.modules)
                         if (m.moduleName == "FTLBeaconModule")
                             if (Convert.ToBoolean(m.moduleValues.GetValue("beaconActivated")))
                                 return true;
+                    }
+                }
                 return false;
             }
         }
@@ -688,8 +732,12 @@ namespace ScienceFoundry.FTL
                 windowVisible = false;
             }
 
-            foreach (GuiElement e in windowContent)
+            for (int i = 0; i < windowContent.Count(); i++)
             {
+                GuiElement e = windowContent[i];
+            //}
+            //foreach (GuiElement e in windowContent)
+            //{
                 GUILayout.BeginHorizontal();
                 if (e.type == "text")
                 {
@@ -823,8 +871,13 @@ namespace ScienceFoundry.FTL
             string activeAnim = animationStages[animStage];
             int curAnimStage = animStage;
 
-            foreach (var anim in part.FindModelAnimators(activeAnim))
+            List<Animation> mas = part.FindModelAnimators(activeAnim).ToList();
+            for (int i = 0; i < mas.Count(); i++)
             {
+                Animation anim = mas[i];
+            //}
+            //foreach (var anim in part.FindModelAnimators(activeAnim))
+            //{
                 if (anim != null)
                 {
                     float origSpd = anim[activeAnim].speed;
