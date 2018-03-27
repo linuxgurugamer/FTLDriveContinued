@@ -83,3 +83,6 @@ unknown
 0.2.1
 	Updated for 1.4.1
 	Added support for ClickThroughBlocker
+
+0.2.1.1
+	Updated change log

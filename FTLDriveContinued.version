@@ -1,12 +1,18 @@
 ﻿{
   "NAME": "FTLDriveContinued",
   "URL": "https://raw.githubusercontent.com/linuxgurugamer/FTLDriveContinued/master/FTLDriveContinued.version",
-  "DOWNLOAD": "http://spacedock.info/mod/835/FTL%20Drive%20Continued/download/0.0.0",
+  "DOWNLOAD" : "https://github.com/linuxgurugamer/FTLDriveContinued/releases",
+    "GITHUB" :
+    {
+        "USERNAME" : "linuxgurugamer",
+        "REPOSITORY" : "FTLDriveContinued"
+    },
+
   "VERSION": {
     "MAJOR": 0,
     "MINOR": 2,
     "PATCH": 1,
-    "BUILD": 0
+    "BUILD": 1
   },
   "KSP_VERSION": {
     "MAJOR": 1,
