@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
+using ClickThroughFix;
+
 namespace ScienceFoundry.FTL
 {
     [KSPModule("FTL Drive")]
@@ -712,7 +714,7 @@ namespace ScienceFoundry.FTL
         {
             if (windowVisible)
             {
-                windowPosition = GUILayout.Window(523429, windowPosition, Display, "FTL possible destinations");
+                windowPosition = ClickThruBlocker.GUILayoutWindow(523429, windowPosition, Display, "FTL possible destinations");
             }
         }
 

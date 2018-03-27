@@ -79,3 +79,7 @@ unknown
 	Hide the Execute Jump button after a jump is executed
 	Removed double debug.log line in LogsManager
 	Added code to save window position, both in Editor and in Flight (separate values)
+
+0.2.1
+	Updated for 1.4.1
+	Added support for ClickThroughBlocker
