@@ -86,3 +86,6 @@ unknown
 
 0.2.1.1
 	Updated change log
+
+0.2.1.2
+	Added check for dependencies
