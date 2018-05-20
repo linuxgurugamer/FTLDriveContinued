@@ -89,3 +89,23 @@ unknown
 
 0.2.1.2
 	Added check for dependencies
+
+0.2.1.3
+	Removed check for ToolbarController
+	Filled nullref when loading vessel in Editor
+	More optimizations of loops, putting the Count() at the first and decrementing, eliminates the need to recalcualte the count every loop
+	Moved all calculations out of the Update() and FixedUpdate() methods into a CoRoutine
+
+	
+	Added following functionality:
+		Drives have a resource in the game and a value
+		However much EC was used for the jump, that much of the additional resource would be used also. For example, if the line
+			jumpResourceDef = ExoticMatter, 0.05
+
+		was added to the drive config and 400EC was used for the jump, then 20 Exotic Matter would also be used.
+
+	Added new field to support this:
+		jumpResourceDef = ExoticMatter, 0.10
+
+	Added new setting for initial horizontal window position
+	Fixed exploding the parts of the vessel in a failed jump (was getting issue with a foreach having entries removed)

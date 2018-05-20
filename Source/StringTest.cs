@@ -67,7 +67,7 @@ namespace StringTest
         void TestFor(int multiplier)
         {
             double sum = 0;
-            for (int i = 0; i < data.Count; i++)
+            for (int i =  data.Count - 1; i >= 0; i--)
             {
                 sum += data[i]; 
             }

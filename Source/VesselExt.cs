@@ -3,15 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using UnityEngine;
+
 namespace ScienceFoundry.FTL
 {
     public static class VesselExt
     {
         public static void Explode(this Vessel self)
         {
-            foreach (var p in self.Parts)
+            //foreach (var p in self.Parts)
+            for (int i = self.Parts.Count - 1; i >= 0; i--)
             {
-                p.explode();
+                try
+                {
+                    self.Parts[i].explode();
+                }
+                catch
+                {
+                    Debug.Log("Explode, exception caught");
+                }
             }
         }
 
@@ -81,7 +91,7 @@ namespace ScienceFoundry.FTL
             }
         }
 
-        private static Orbit CreateOrbit(double inc, double e, double sma, double lan, double w, double mEp, double epoch, CelestialBody body)
+        internal static Orbit CreateOrbit(double inc, double e, double sma, double lan, double w, double mEp, double epoch, CelestialBody body)
         {
             if (double.IsNaN(inc))
                 inc = 0;

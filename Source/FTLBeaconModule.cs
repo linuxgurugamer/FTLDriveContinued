@@ -112,7 +112,7 @@ namespace ScienceFoundry.FTL
             int curAnimStage = animStage;
 
             var mas = part.FindModelAnimators(activeAnim).ToList();
-            for (int i = 0; i < mas.Count;  i++)
+            for (int i = mas.Count - 1; i >= 0; i--)
             {
                 var anim = mas[i];
             //}
