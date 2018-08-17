@@ -9,7 +9,7 @@ using UnityEngine;
 // Class used to test the speed of the various methods used to concatenate strings together
 // IMPORTANT: file not included in project, so it does not run
 //
-#if DEBUG
+#if false
 namespace StringTest
 {
     [KSPAddon(KSPAddon.Startup.SpaceCentre, true)]

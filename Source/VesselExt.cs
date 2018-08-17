@@ -105,6 +105,7 @@ namespace ScienceFoundry.FTL
                 w = 0;
             if (double.IsNaN(mEp))
                 mEp = 0;
+
             if (double.IsNaN(epoch))
                 mEp = Planetarium.GetUniversalTime();
 
@@ -113,10 +114,11 @@ namespace ScienceFoundry.FTL
 
             if (Math.Sign(sma) >= 0)
             {
-                while (mEp < 0)
-                    mEp += Math.PI * 2;
-                while (mEp > Math.PI * 2)
-                    mEp -= Math.PI * 2;
+                //while (mEp < 0)
+                //    mEp += Math.PI * 2;
+                //while (mEp > Math.PI * 2)
+                //    mEp -= Math.PI * 2;
+                mEp = mEp % (Math.PI * 2);
             }
 
             return new Orbit(inc, e, sma, lan, w, mEp, epoch, body);

@@ -71,7 +71,7 @@ namespace ScienceFoundry.FTL
         //------------------------------ PARTMODULE OVERRIDES -------------------------------------
         void CalculateValues(bool inFlight = true)
         {
-            Debug.Log("CalculateValues");
+            LogsManager.Info("CalculateValues, inFlight: " + inFlight);
             if (!inFlight && (EditorLogic.fetch == null || EditorLogic.fetch.ship == null || EditorLogic.fetch.ship.Parts == null))
                 return;
             if (inFlight && FlightGlobals.ActiveVessel == null)
@@ -283,8 +283,8 @@ namespace ScienceFoundry.FTL
                 sourceVessel.totalMass = EditorLogic.fetch.ship.GetTotalMass();
 
                 double sourceOrbit = testAltitude * 1000;
-
                 Orbit testOrigOrbit = VesselExt.CreateOrbit(Double.NaN, Double.NaN, sourceOrbit, Double.NaN, Double.NaN, Double.NaN, Double.NaN, FlightGlobals.GetHomeBody());
+
                 testOrigOrbit.referenceBody = FlightGlobals.GetHomeBody();
                 testOrigOrbit.altitude = sourceOrbit;
 
@@ -355,6 +355,7 @@ namespace ScienceFoundry.FTL
 
         void Start()
         {
+            LogsManager.Info("FTLDriveModule.Start");
             if (bodiesList == null)
                 InitBodiesList();
 
@@ -395,7 +396,7 @@ namespace ScienceFoundry.FTL
                 }
             }
 
-            CalculateValues();
+            CalculateValues(HighLogic.LoadedSceneIsFlight);
 
             GameEvents.onVesselWasModified.Add(onVesselWasModified);
 
@@ -434,12 +435,12 @@ namespace ScienceFoundry.FTL
 
         void OnDestroy()
         {
-            Debug.Log("FTLDriveModule.OnDestroy");
+            LogsManager.Info("FTLDriveModule.OnDestroy");
             Destroy();
         }
         void Destroy()
         {
-            Debug.Log("Destroy");
+            LogsManager.Info("Destroy");
             GameEvents.onVesselWasModified.Remove(onVesselWasModified);
             periodicTargetUpdatesActive = false;
         }
@@ -480,7 +481,7 @@ namespace ScienceFoundry.FTL
         {
             if (HighLogic.LoadedSceneIsEditor)
             {
-
+                LogsManager.Info("FTLDriveModule.Update in editor");
                 ClearLabels();
                 AppendLabel("Generated force", String.Format("{0:N1} iN", generatedForce));
                 AppendLabel("Required EC", String.Format("{0:N1} ec/sec over {1:N1} sec", chargeRate, chargeTime));
@@ -489,7 +490,7 @@ namespace ScienceFoundry.FTL
                 if (windowVisible)
                 {
                     windowContent.Clear();
-
+                    
                     CalculateValues(false);
 
                     StringBuilder sb = new StringBuilder();
@@ -711,10 +712,10 @@ namespace ScienceFoundry.FTL
                                 }
                                 else
                                 {
-                                    Debug.Log("FixedUpdate 1, vessel: " + vessel.vesselName + ", vesselID: " + vessel.protoVessel.vesselID.ToString() + ",  targetSuccessList.Count: " + targetSuccessList.Count);
+                                    LogsManager.Info("FixedUpdate 1, vessel: " + vessel.vesselName + ", vesselID: " + vessel.protoVessel.vesselID.ToString() + ",  targetSuccessList.Count: " + targetSuccessList.Count);
                                     foreach (var tc1 in targetSuccessList.Keys)
                                     {
-                                        Debug.Log("tc1.key: " + tc1);
+                                        LogsManager.Info("tc1.key: " + tc1);
                                     }
                                 }
 

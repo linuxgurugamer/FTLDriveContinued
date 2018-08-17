@@ -109,3 +109,12 @@ unknown
 
 	Added new setting for initial horizontal window position
 	Fixed exploding the parts of the vessel in a failed jump (was getting issue with a foreach having entries removed)
+
+0.2.1.4
+	Replaced some Debug.Log statements with LogsManager.Info to reduce log spam
+	Replaced some extremely inefficient code to adjust a value to within a range in CreateOrbit with a simple Modulo operator
+                //while (mEp < 0)
+                //    mEp += Math.PI * 2;
+                //while (mEp > Math.PI * 2)
+                //    mEp -= Math.PI * 2;
+                mEp = mEp % (Math.PI * 2);
