@@ -118,3 +118,10 @@ unknown
                 //while (mEp > Math.PI * 2)
                 //    mEp -= Math.PI * 2;
                 mEp = mEp % (Math.PI * 2);
+
+0.2.1.5
+	Optimized destination window a bit by moving the init for the GUIStyles out of the loop
+	Made FTL Destination window more obvious
+	Added choice of skin for windows.
+	Added code to make window KSP skin a bit wider
+	Added hiding of UI on F2

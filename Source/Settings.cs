@@ -34,6 +34,10 @@ namespace ScienceFoundry.FTL
         [GameParameters.CustomFloatParameterUI("Initial Window Position", minValue = 0.0f, maxValue = 100.0f, stepCount = 101, displayFormat = "F0", asPercentage = false)]
         public float initialWinPos = 50f;
 
+        [GameParameters.CustomParameterUI("Use KSP skin")]
+        public bool KSPSkin = false;
+
+
 
         public override void SetDifficultyPreset(GameParameters.Preset preset)
         {

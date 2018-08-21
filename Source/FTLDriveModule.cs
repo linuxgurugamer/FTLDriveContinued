@@ -68,6 +68,14 @@ namespace ScienceFoundry.FTL
 
         int resourceID = -1;
 
+
+
+        const int WIDTH = 250;
+        const int HEIGHT = 250;
+        const int KSP_SKIN_WIDTH = 320;
+
+        bool hidden = false;
+
         //------------------------------ PARTMODULE OVERRIDES -------------------------------------
         void CalculateValues(bool inFlight = true)
         {
@@ -353,6 +361,7 @@ namespace ScienceFoundry.FTL
         }
 
 
+
         void Start()
         {
             LogsManager.Info("FTLDriveModule.Start");
@@ -369,8 +378,6 @@ namespace ScienceFoundry.FTL
             animationStages = animationNames.Split(',').Select(a => a.Trim()).ToArray();
             SetUpAnimation(animationStages.First(), this.part, WrapMode.Loop);
 
-            const int WIDTH = 250;
-            const int HEIGHT = 250;
             float leftPos = (HighLogic.CurrentGame.Parameters.CustomParams<FTLSettings>().initialWinPos) / 100 * (Screen.width - WIDTH);
 
             windowPosition = new Rect(leftPos , (Screen.height - HEIGHT) / 2, WIDTH, HEIGHT);
@@ -406,6 +413,9 @@ namespace ScienceFoundry.FTL
 
             if (!periodicTargetUpdatesActive)
                 StartCoroutine("PeriodicTargetUpdates");
+
+            GameEvents.onHideUI.Add(OnHideUI);
+            GameEvents.onShowUI.Add(OnShowUI);
         }
 
         static bool periodicTargetUpdatesActive = false;
@@ -436,6 +446,8 @@ namespace ScienceFoundry.FTL
         void OnDestroy()
         {
             LogsManager.Info("FTLDriveModule.OnDestroy");
+            GameEvents.onHideUI.Remove(OnHideUI);
+            GameEvents.onShowUI.Remove(OnShowUI);
             Destroy();
         }
         void Destroy()
@@ -443,6 +455,16 @@ namespace ScienceFoundry.FTL
             LogsManager.Info("Destroy");
             GameEvents.onVesselWasModified.Remove(onVesselWasModified);
             periodicTargetUpdatesActive = false;
+        }
+ 
+        private void OnHideUI()
+        {
+            hidden = true;
+        }
+
+        private void OnShowUI()
+        {
+            hidden = false;
         }
 
         public override void OnLoad(ConfigNode node)
@@ -494,6 +516,7 @@ namespace ScienceFoundry.FTL
                     CalculateValues(false);
 
                     StringBuilder sb = new StringBuilder();
+                    sb.AppendEx("Estimated Values in Editor");
                     sb.AppendEx("Total generated force", String.Format("{0:N1} iN", totalGeneratedForce));
                     sb.AppendEx("Total required EC", String.Format("{0:N1} ec/s over {1:N1} sec", totalChargeRate, totalChargeTime));
                     if (totalResourceAmtNeeded > 0)
@@ -507,23 +530,23 @@ namespace ScienceFoundry.FTL
                     windowContent.Add(new GuiElement()
                     {
                         type = "slider",
-                        text = String.Format("Test altitude: {0:N1} km", testAltitude),
+                        text = String.Format("Test altitude: {0:N1} Km", testAltitude),
                         color = null,
                     });
 
                     sb = new StringBuilder();
-                    sb.AppendEx("Atmospheric depth", String.Format("{0:N1} km", minTestAltitude));
-                    //sb.AppendEx(testBody.name + " SOI: " + (testBody.sphereOfInfluence / 1000).ToString("n1") + " km");
-                    sb.AppendEx(testBody.name + " max orbit", String.Format("{0:N1} km", maxTestAltitude));
+                    sb.AppendEx("Atmospheric depth", String.Format("{0:N1} Km", minTestAltitude));
+                    //sb.AppendEx(testBody.name + " SOI: " + (testBody.sphereOfInfluence / 1000).ToString("n1") + " Km");
+                    sb.AppendEx(testBody.name + " max orbit", String.Format("{0:N1} Km", maxTestAltitude));
                     sb.AppendEx("Ship mass", String.Format("{0:N1} kg", EditorLogic.fetch.ship.GetTotalMass() * 1000));
                     sb.AppendEx("Total generated force", String.Format("{0:N1} iN", totalGeneratedForce));
 
 
                     windowContent.Add(new GuiElement()
                     {
-                        type = "text",
+                        type = "header",
                         text = sb.ToString(),
-                        color = null,
+                        color = "yellow",
                     });
 
                     for (int i = HighLogic.CurrentGame.flightState.protoVessels.Count() - 1; i >= 0; i--)
@@ -544,13 +567,13 @@ namespace ScienceFoundry.FTL
                             {
 
                                 sb = new StringBuilder();
-                                sb.AppendEx("A vessel orbiting", String.Format("{0} at {1:N1} km", tc.targetBodyName, tc.targetAltitude / 1000));
+                                sb.AppendEx("A beacon orbiting", String.Format("{0} at {1:N1} Km", tc.targetBodyName, tc.targetAltitude / 1000));
                                 sb.AppendEx("Required force", String.Format("{0:N1} iN", tc.neededForce));
                                 if (neededResourceAmt(vessel.vesselID, tc.neededResourceAmt) > 0)
                                     sb.AppendEx(jumpResource + " needed", String.Format("{0:N1}", tc.neededResourceAmt));
                                 //sb.AppendEx("Total required EC", String.Format("{0:N1}/s over {1:N1}s", totalChargeRate, totalChargeTime));
                                 sb.AppendEx("Success probability", String.Format("{0:N0} %", tc.successProbability * 100));
-                                sb.AppendEx("Optimum altitude", String.Format((tc.optimumExists ? ("{0:N1} km" + (tc.optimumBeyondSOI ? " (beyond SOI)" : "")) : "none (insufficient drives?)"), tc.optimumAltitude / 1000));
+                                sb.AppendEx("Optimum altitude", String.Format((tc.optimumExists ? ("{0:N1} Km" + (tc.optimumBeyondSOI ? " (beyond SOI)" : "")) : "none (insufficient drives?)"), tc.optimumAltitude / 1000));
 
                                 windowContent.Add(new GuiElement()
                                 {
@@ -644,11 +667,11 @@ namespace ScienceFoundry.FTL
                             AppendLabel("Total required EC", String.Format("{0:N1} ec/sec over {1:N1} sec", totalChargeRate, totalChargeTime));
                             if (neededResourceAmt(Destination.protoVessel.vesselID, tc.neededResourceAmt) > 0)
                                 AppendLabel(jumpResource + " needed", String.Format("{0:N1}", tc.neededResourceAmt));
-                            AppendLabel("Target orbiting", String.Format("{0} at {1:N1} km", tc.targetBodyName, tc.targetAltitude / 1000));
+                            AppendLabel("Target orbiting", String.Format("{0} at {1:N1} Km", tc.targetBodyName, tc.targetAltitude / 1000));
                             AppendLabel("Required force", String.Format("{0:N1} iN", tc.neededForce));
                             if (VesselInFlight(Source) && VesselInFlight(Destination) && Source != Destination && Destination != null && VesselHasActiveBeacon(Destination))
                                 AppendLabel("Success probability", String.Format("{0:N0} %", tc.successProbability * 100));
-                            AppendLabel("Optimum altitude", String.Format((tc.optimumExists ? ("{0:N1} km" + (tc.optimumBeyondSOI ? " (beyond SOI)" : "")) : "none (insufficient drives?)"), tc.optimumAltitude / 1000));
+                            AppendLabel("Optimum altitude", String.Format((tc.optimumExists ? ("{0:N1} Km" + (tc.optimumBeyondSOI ? " (beyond SOI)" : "")) : "none (insufficient drives?)"), tc.optimumAltitude / 1000));
                         }
                     }
                     else
@@ -666,6 +689,7 @@ namespace ScienceFoundry.FTL
                         windowContent.Clear();
 
                         StringBuilder sb = new StringBuilder();
+                        sb.AppendEx("Current Vessel: " + FlightGlobals.ActiveVessel.name);
                         sb.AppendEx("Total generated force", String.Format("{0:N1} iN", totalGeneratedForce));
                         sb.AppendEx("Total required EC", String.Format("{0:N1} ec/sec over {1:N1} sec", totalChargeRate, totalChargeTime));
                         if (totalResourceAmtNeeded > 0)
@@ -674,9 +698,9 @@ namespace ScienceFoundry.FTL
 
                         windowContent.Add(new GuiElement()
                         {
-                            type = "button",
+                            type = "header",
                             text = sb.ToString(),
-                            color = null,
+                            color = "yellow",
                             clicked = () => { targetVesselID = Guid.Empty; FlightGlobals.fetch.SetVesselTarget(null); },
                         });
 
@@ -693,13 +717,13 @@ namespace ScienceFoundry.FTL
                                 if (targetSuccessList.TryGetValue(vessel.protoVessel.vesselID.ToString(), out tc))
                                 {
                                     sb = new StringBuilder();
-                                    sb.AppendEx("A vessel orbiting", String.Format("{0} at {1:N1} km", tc.targetBodyName, tc.targetAltitude / 1000));
+                                    sb.AppendEx("A beacon orbiting", String.Format("{0} at {1:N1} Km", tc.targetBodyName, tc.targetAltitude / 1000));
                                     sb.AppendEx("Required force", String.Format("{0:N1} iN", tc.neededForce));
                                     if (Destination != null && tc.neededResourceAmt > 0)
                                         sb.AppendEx(jumpResource + " needed", String.Format("{0:N1}", tc.neededResourceAmt));
                                     if (VesselInFlight(Source) && VesselInFlight(Destination) && Source != Destination && Destination != null && VesselHasActiveBeacon(Destination))
                                         sb.AppendEx("Success probability", String.Format("{0:N0} %", tc.successProbability * 100));
-                                    sb.AppendEx("Optimum altitude", String.Format((tc.optimumExists ? ("{0:N1} km" + (tc.optimumBeyondSOI ? " (beyond SOI)" : "")) : "none (insufficient drives?)"), tc.optimumAltitude / 1000));
+                                    sb.AppendEx("Optimum altitude", String.Format((tc.optimumExists ? ("{0:N1} Km" + (tc.optimumBeyondSOI ? " (beyond SOI)" : "")) : "none (insufficient drives?)"), tc.optimumAltitude / 1000));
                                     sb.AppendEx(vessel == Destination ? @"     \ - - - - - - Selected target - - - - - - /     " : @"     \ - - - - - - Click to select - - - - - - /     ");
 
                                     windowContent.Add(new GuiElement()
@@ -1007,9 +1031,39 @@ namespace ScienceFoundry.FTL
             }
         }
 
+        GUIStyle normal;
+        GUIStyle yellow;
+        GUIStyle green;
+        bool initted = false;
+        GUIStyle label;
+        bool lastKSPSkin = false;
         void OnGUI()
         {
-            if (windowVisible)
+            if (!initted)
+            {
+                initted = true;
+                normal = new GUIStyle(GUI.skin.textField);
+                normal.normal.textColor = normal.hover.textColor = GUI.skin.textField.normal.textColor;
+                yellow = new GUIStyle(GUI.skin.textField);
+                yellow.normal.textColor = yellow.hover.textColor = Color.yellow;
+                green = new GUIStyle(GUI.skin.textField);
+                green.normal.textColor = green.hover.textColor = Color.green;
+                label = new GUIStyle(GUI.skin.label);
+                label.normal.textColor = yellow.hover.textColor = Color.yellow;
+            }
+            if (HighLogic.CurrentGame.Parameters.CustomParams<FTLSettings>().KSPSkin)
+            {
+                GUI.skin = HighLogic.Skin;
+            }
+            if (lastKSPSkin != HighLogic.CurrentGame.Parameters.CustomParams<FTLSettings>().KSPSkin)
+            {
+                if (HighLogic.CurrentGame.Parameters.CustomParams<FTLSettings>().KSPSkin)
+                    windowPosition.width = KSP_SKIN_WIDTH;
+                else
+                    windowPosition.width = WIDTH;
+                lastKSPSkin = HighLogic.CurrentGame.Parameters.CustomParams<FTLSettings>().KSPSkin;
+            }
+            if (windowVisible && ! hidden)
                 windowPosition = ClickThruBlocker.GUILayoutWindow(523429, windowPosition, DisplayDestinations, "FTL Possible Destinations");
 
         }
@@ -1017,13 +1071,6 @@ namespace ScienceFoundry.FTL
 
         void DisplayDestinations(int windowId)
         {
-            GUIStyle normal = new GUIStyle(GUI.skin.textField);
-            normal.normal.textColor = normal.hover.textColor = GUI.skin.textField.normal.textColor;
-            GUIStyle yellow = new GUIStyle(GUI.skin.textField);
-            yellow.normal.textColor = yellow.hover.textColor = Color.yellow;
-            GUIStyle green = new GUIStyle(GUI.skin.textField);
-            green.normal.textColor = green.hover.textColor = Color.green;
-
             Vector2 buttonSize = new Vector2(25f, 20f);
             if (GUI.Button(new Rect(windowPosition.width - 23f, 2f, 18f, 13f), "x"))
                 windowVisible = false;
@@ -1032,10 +1079,12 @@ namespace ScienceFoundry.FTL
             for (int i = 0; i < i0; i++)
             {
                 GuiElement e = windowContent[i];
-                //}
-                //foreach (GuiElement e in windowContent)
-                //{
+
                 GUILayout.BeginHorizontal();
+                if (e.type == "header")
+                {
+                    GUILayout.TextField(e.text, label);
+                }
                 if (e.type == "text")
                 {
                     GUIStyle s = e.color == "yellow" ? yellow : e.color == "green" ? green : normal;
