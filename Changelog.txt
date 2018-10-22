@@ -125,3 +125,7 @@ unknown
 	Added choice of skin for windows.
 	Added code to make window KSP skin a bit wider
 	Added hiding of UI on F2
+
+0.2.1.6
+	Added some missing text in the editor
+	Version bump for 1.5 rebuild

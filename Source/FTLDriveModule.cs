@@ -514,13 +514,14 @@ namespace ScienceFoundry.FTL
                     windowContent.Clear();
                     
                     CalculateValues(false);
-
+#if false
                     StringBuilder sb = new StringBuilder();
                     sb.AppendEx("Estimated Values in Editor");
                     sb.AppendEx("Total generated force", String.Format("{0:N1} iN", totalGeneratedForce));
                     sb.AppendEx("Total required EC", String.Format("{0:N1} ec/s over {1:N1} sec", totalChargeRate, totalChargeTime));
                     if (totalResourceAmtNeeded > 0)
                         sb.AppendEx("Max " + jumpResource + " needed", String.Format("{0:N1}", totalResourceAmtNeeded));
+#endif
                     windowContent.Add(new GuiElement()
                     {
                         type = "leftright",
@@ -534,13 +535,17 @@ namespace ScienceFoundry.FTL
                         color = null,
                     });
 
-                    sb = new StringBuilder();
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendEx("Estimated Values");
+                    sb.AppendEx(" ");
                     sb.AppendEx("Atmospheric depth", String.Format("{0:N1} Km", minTestAltitude));
                     //sb.AppendEx(testBody.name + " SOI: " + (testBody.sphereOfInfluence / 1000).ToString("n1") + " Km");
                     sb.AppendEx(testBody.name + " max orbit", String.Format("{0:N1} Km", maxTestAltitude));
                     sb.AppendEx("Ship mass", String.Format("{0:N1} kg", EditorLogic.fetch.ship.GetTotalMass() * 1000));
                     sb.AppendEx("Total generated force", String.Format("{0:N1} iN", totalGeneratedForce));
-
+                    sb.AppendEx("Total required EC", String.Format("{0:N1} ec/s over {1:N1} sec", totalChargeRate, totalChargeTime));
+                    if (totalResourceAmtNeeded > 0)
+                        sb.AppendEx("Max " + jumpResource + " needed", String.Format("{0:N1}", totalResourceAmtNeeded));
 
                     windowContent.Add(new GuiElement()
                     {
@@ -552,9 +557,7 @@ namespace ScienceFoundry.FTL
                     for (int i = HighLogic.CurrentGame.flightState.protoVessels.Count() - 1; i >= 0; i--)
                     {
                         ProtoVessel vessel = HighLogic.CurrentGame.flightState.protoVessels[i];
-                        //}
-                        //foreach (ProtoVessel vessel in HighLogic.CurrentGame.flightState.protoVessels)
-                        //{
+
                         Vessel v = new Vessel();
                         v.loaded = false;
                         v.protoVessel = vessel;
@@ -577,7 +580,7 @@ namespace ScienceFoundry.FTL
 
                                 windowContent.Add(new GuiElement()
                                 {
-                                    type = "text",
+                                    type = "editortext",
                                     text = sb.ToString(),
                                     color = null,
                                 });
@@ -1089,6 +1092,17 @@ namespace ScienceFoundry.FTL
                 {
                     GUIStyle s = e.color == "yellow" ? yellow : e.color == "green" ? green : normal;
                     GUILayout.TextField(e.text, s);
+                }
+                if (e.type == "editortext")
+                {
+                    GUIStyle s = e.color == "yellow" ? yellow : e.color == "green" ? green : normal;
+                    GUILayout.TextField(e.text, s);
+#if false
+                    // this is for a future feature, where the destination craft can have it's test orbit variable in the editor for testing purposes
+                    GUILayout.EndHorizontal();
+                    GUILayout.BeginHorizontal();
+                    float newtestAltitude = GUILayout.HorizontalSlider(testAltitude, minTestAltitude, maxTestAltitude);
+#endif
                 }
                 if (e.type == "leftright")
                 {
