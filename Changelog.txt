@@ -129,3 +129,6 @@ unknown
 0.2.1.6
 	Added some missing text in the editor
 	Version bump for 1.5 rebuild
+
+0.2.2
+	Added missing bulkheadProfiles = lines
