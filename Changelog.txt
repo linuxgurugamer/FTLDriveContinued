@@ -132,3 +132,6 @@ unknown
 
 0.2.2
 	Added missing bulkheadProfiles = lines
+
+0.2.2.1
+	Version bump for CKAN on Spacedock
