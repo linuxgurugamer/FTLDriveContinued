@@ -47,10 +47,6 @@ namespace ScienceFoundry.FTL
             public string type;
             public string text;
             public string color;
-            public bool isDest;
-            public float minAltitude;
-            public float maxAltitude;
-            public float testAltitude;
             public Action clicked;
         }
 
@@ -63,12 +59,6 @@ namespace ScienceFoundry.FTL
         static float testAltitude = 70;
         static float minTestAltitude = 70;
         static float maxTestAltitude = 50000;
-
-        static CelestialBody testDestBody = null;
-        static int testDestBodyIdx = -1;
-        static float testDestAltitude = 70;
-        static float minTestDestAltitude = 70;
-        static float maxTestDestAltitude = 50000;
 
         // For resource usage
         double resourceAmtAvailable = 0;
@@ -132,18 +122,7 @@ namespace ScienceFoundry.FTL
             return a_neededResourceAmt;
         }
 
-
-
-        void CalcOriginTestAltitudes(CelestialBody body)
-        {
-            CalcTestAltitudes(body, out testBody, out testAltitude, out minTestAltitude, out maxTestAltitude, ref testBodyIdx);
-        }
-        void CalcDestinationTestAltitudes(CelestialBody body)
-        {
-            CalcTestAltitudes(body, out testDestBody, out testDestAltitude, out minTestDestAltitude, out maxTestDestAltitude, ref testDestBodyIdx);
-        }
-
-        void CalcTestAltitudes(CelestialBody body, out CelestialBody testBody, out float testAltitude, out float minTestAltitude, out float maxTestAltitude, ref int testBodyIdx)
+        void CalcTestAltitudes(CelestialBody body)
         {
             testBody = body;
             testAltitude = (float)body.atmosphereDepth / 1000 + 1;
@@ -161,7 +140,6 @@ namespace ScienceFoundry.FTL
                     }
                 }
         }
-
 
         // This is needed because FlightGlobals.CelestialBody.referencebody is always the Sun in the editor
         public class BodyRef
@@ -218,7 +196,6 @@ namespace ScienceFoundry.FTL
         public class TargetSuccess
         {
             public string vesselName;
-            public CelestialBody targetBody;
             public string targetBodyName;
             public double targetAltitude;
             public double gravsource;
@@ -260,7 +237,6 @@ namespace ScienceFoundry.FTL
 
             void Calc(Vessel Source, Vessel targetVessel, Orbit sourceOrbit, Orbit destOrbit)
             {
-                targetBody = destOrbit.referenceBody;
                 targetBodyName = trimthe(destOrbit.referenceBody.name);
                 targetAltitude = destOrbit.altitude;
 
@@ -274,7 +250,7 @@ namespace ScienceFoundry.FTL
                 neededForce = (gravsource + gravdest) * mass;
 
                 successProbability = Math.Min(1, Math.Max(0, totalGeneratedForce / neededForce));
-                optimumBeyondSOI = false;
+                  optimumBeyondSOI = false;
                 optimumAltitude = 0;
 
                 if (jumpResourceECmultiplier > 0)
@@ -310,8 +286,6 @@ namespace ScienceFoundry.FTL
         {
             if (HighLogic.LoadedSceneIsEditor && EditorLogic.fetch.ship != null)
             {
-                // Add the testDest stuff here
-
                 Vessel sourceVessel = new Vessel();
                 sourceVessel.loaded = false;
                 sourceVessel.totalMass = EditorLogic.fetch.ship.GetTotalMass();
@@ -353,7 +327,6 @@ namespace ScienceFoundry.FTL
                         yield return null;
                     }
                 }
-                CalcDisplayValues();
             }
             if (HighLogic.LoadedSceneIsFlight)
             {
@@ -396,9 +369,7 @@ namespace ScienceFoundry.FTL
                 InitBodiesList();
 
             if (testBody == null)
-                CalcOriginTestAltitudes(FlightGlobals.GetHomeBody());
-            if (testDestBody == null)
-                CalcDestinationTestAltitudes(FlightGlobals.GetHomeBody());
+                CalcTestAltitudes(FlightGlobals.GetHomeBody());
 
             SoundManager.LoadSound("FTLDriveContinued/Sounds/drive_sound", "DriveSound");
             driveSound = new FXGroup("DriveSound");
@@ -409,8 +380,8 @@ namespace ScienceFoundry.FTL
 
             float leftPos = (HighLogic.CurrentGame.Parameters.CustomParams<FTLSettings>().initialWinPos) / 100 * (Screen.width - WIDTH);
 
-            windowPosition = new Rect(leftPos, (Screen.height - HEIGHT) / 2, WIDTH, HEIGHT);
-
+            windowPosition = new Rect(leftPos , (Screen.height - HEIGHT) / 2, WIDTH, HEIGHT);
+            
             if (jumpResourceDef != "")
             {
                 string[] st = jumpResourceDef.Split(',');
@@ -445,27 +416,6 @@ namespace ScienceFoundry.FTL
 
             GameEvents.onHideUI.Add(OnHideUI);
             GameEvents.onShowUI.Add(OnShowUI);
-
-            
-            if (HighLogic.LoadedSceneIsEditor)
-            {
-                GameEvents.onEditorPartPlaced.Add(onEditorPartPlacedDeletedPicked);
-                GameEvents.onEditorPartDeleted.Add(onEditorPartPlacedDeletedPicked);
-                GameEvents.onEditorPartPicked.Add(onEditorPartPlacedDeletedPicked);
-                GameEvents.onEditorPartEvent.Add(onEditorPartEvent);
-
-                SingleTargetUpdate();
-            }
-        }
-        void onEditorPartEvent(ConstructionEventType cet, Part p)
-        {
-            LogsManager.Info("onEditorPartEvent");
-            CalcDisplayValues();
-        }
-        void onEditorPartPlacedDeletedPicked(Part p)
-        {
-            LogsManager.Info("onEditorPartPlacedDeletedPicked");
-            CalcDisplayValues();
         }
 
         static bool periodicTargetUpdatesActive = false;
@@ -500,21 +450,13 @@ namespace ScienceFoundry.FTL
             GameEvents.onShowUI.Remove(OnShowUI);
             Destroy();
         }
-
         void Destroy()
         {
             LogsManager.Info("Destroy");
             GameEvents.onVesselWasModified.Remove(onVesselWasModified);
-            if (HighLogic.LoadedSceneIsEditor)
-            {
-                GameEvents.onEditorPartPlaced.Remove(onEditorPartPlacedDeletedPicked);
-                GameEvents.onEditorPartDeleted.Remove(onEditorPartPlacedDeletedPicked);
-                GameEvents.onEditorPartPicked.Remove(onEditorPartPlacedDeletedPicked);
-                GameEvents.onEditorPartEvent.Remove(onEditorPartEvent);
-            }
             periodicTargetUpdatesActive = false;
         }
-
+ 
         private void OnHideUI()
         {
             hidden = true;
@@ -557,7 +499,7 @@ namespace ScienceFoundry.FTL
 
         Func<string, string> trimthe = s => s.StartsWith("The") ? s.Substring(3).Trim() : s;
 
-        void CalcDisplayValues()
+        void Update()
         {
             if (HighLogic.LoadedSceneIsEditor)
             {
@@ -567,10 +509,10 @@ namespace ScienceFoundry.FTL
                 AppendLabel("Required EC", String.Format("{0:N1} ec/sec over {1:N1} sec", chargeRate, chargeTime));
 
 
-                // if (windowVisible)
+                if (windowVisible)
                 {
                     windowContent.Clear();
-
+                    
                     CalculateValues(false);
 #if false
                     StringBuilder sb = new StringBuilder();
@@ -584,14 +526,12 @@ namespace ScienceFoundry.FTL
                     {
                         type = "leftright",
                         text = String.Format("Test body: {0}", testBody.name),
-                        isDest = false,
                         color = null,
                     });
                     windowContent.Add(new GuiElement()
                     {
                         type = "slider",
                         text = String.Format("Test altitude: {0:N1} Km", testAltitude),
-                        isDest = false,
                         color = null,
                     });
 
@@ -611,73 +551,8 @@ namespace ScienceFoundry.FTL
                     {
                         type = "header",
                         text = sb.ToString(),
-                        isDest = false,
                         color = "yellow",
                     });
-#if false
-                    if (HighLogic.CurrentGame.Parameters.CustomParams<FTLSettings>().allowMissingDest)
-                    {
-                        windowContent.Add(new GuiElement()
-                        {
-                            type = "leftright",
-                            text = String.Format("Dest test body: {0}", testDestBody.name),
-                            isDest = true,
-                            color = null,
-                        });
-                        windowContent.Add(new GuiElement()
-                        {
-                            type = "slider",
-                            text = String.Format("Test altitude: {0:N1} Km", testDestAltitude),
-                            isDest = true,
-                            color = null,
-                        });
-
-                        sb = new StringBuilder();
-                        sb.AppendEx("Test orbit around", String.Format("{0} at {1:N1} Km", testDestBody.name, testDestAltitude));
-
-                        Vessel sourceVessel = new Vessel();
-                        sourceVessel.loaded = false;
-                        sourceVessel.totalMass = EditorLogic.fetch.ship.GetTotalMass();
-
-                        // Need to replace this with an imaginiary protoVessel of  minimal size
-                        ProtoVessel protoVessel = HighLogic.CurrentGame.flightState.protoVessels[0];
-
-                        Vessel targetVessel = new Vessel();
-                        targetVessel.loaded = false;
-                        targetVessel.protoVessel = protoVessel;
-
-                        double sourceOrbit = testAltitude * 1000;
-                        Orbit testOrigOrbit = VesselExt.CreateOrbit(Double.NaN, Double.NaN, sourceOrbit, Double.NaN, Double.NaN, Double.NaN, Double.NaN, FlightGlobals.GetHomeBody());
-
-                        testOrigOrbit.referenceBody = FlightGlobals.GetHomeBody();
-                        testOrigOrbit.altitude = sourceOrbit;
-
-
-                        Orbit destOrbit = new Orbit(protoVessel.orbitSnapShot.inclination, protoVessel.orbitSnapShot.eccentricity, protoVessel.orbitSnapShot.semiMajorAxis,
-                            protoVessel.orbitSnapShot.LAN, protoVessel.orbitSnapShot.argOfPeriapsis, protoVessel.orbitSnapShot.meanAnomalyAtEpoch, protoVessel.orbitSnapShot.epoch, FlightGlobals.Bodies[protoVessel.orbitSnapShot.ReferenceBodyIndex]);
-                        destOrbit.semiMajorAxis = testDestAltitude;
-                        destOrbit.altitude = testDestAltitude;
-
-                        TargetSuccess tc = new TargetSuccess(jumpResourceECmultiplier, chargeTime, sourceVessel, targetVessel, testOrigOrbit, destOrbit);
-                        
-                        {
-                            sb.AppendEx("Required force", String.Format("{0:N1} iN", tc.neededForce));
-                            //if (neededResourceAmt(vessel.vesselID, tc.neededResourceAmt) > 0)
-                            //    sb.AppendEx(jumpResource + " needed", String.Format("{0:N1}", tc.neededResourceAmt));
-                            //sb.AppendEx("Total required EC", String.Format("{0:N1}/s over {1:N1}s", totalChargeRate, totalChargeTime));
-                            sb.AppendEx("Success probability", String.Format("{0:N0} %", tc.successProbability * 100));
-                            sb.AppendEx("Optimum departure altitude", String.Format((tc.optimumExists ? ("{0:N1} Km" + (tc.optimumBeyondSOI ? " (beyond SOI)" : "")) : "none (insufficient drives?)"), tc.optimumAltitude / 1000));
-                        }
-
-                        windowContent.Add(new GuiElement()
-                        {
-                            type = "editortext",
-                            text = sb.ToString(),
-                            isDest = true,
-                            color = null,
-                        });
-                    }
-#endif
 
                     for (int i = HighLogic.CurrentGame.flightState.protoVessels.Count() - 1; i >= 0; i--)
                     {
@@ -695,31 +570,19 @@ namespace ScienceFoundry.FTL
                             {
 
                                 sb = new StringBuilder();
-                                sb.AppendEx("A beacon orbiting ", String.Format("{0} at {1:N1} Km", tc.targetBodyName, tc.targetAltitude / 1000));
+                                sb.AppendEx("A beacon orbiting", String.Format("{0} at {1:N1} Km", tc.targetBodyName, tc.targetAltitude / 1000));
                                 sb.AppendEx("Required force", String.Format("{0:N1} iN", tc.neededForce));
                                 if (neededResourceAmt(vessel.vesselID, tc.neededResourceAmt) > 0)
                                     sb.AppendEx(jumpResource + " needed", String.Format("{0:N1}", tc.neededResourceAmt));
                                 //sb.AppendEx("Total required EC", String.Format("{0:N1}/s over {1:N1}s", totalChargeRate, totalChargeTime));
                                 sb.AppendEx("Success probability", String.Format("{0:N0} %", tc.successProbability * 100));
-                                sb.AppendEx("Optimum departure altitude", String.Format((tc.optimumExists ? ("{0:N1} Km" + (tc.optimumBeyondSOI ? " (beyond SOI)" : "")) : "none (insufficient drives?)"), tc.optimumAltitude / 1000));
-
-
-                                float initialTestAltitude, minTestAltitude, maxTestAltitude;
-                                CelestialBody testBody;
-                                int testBodyIdx = 0;
-                                CalcTestAltitudes(tc.targetBody, out testBody, out initialTestAltitude, out minTestAltitude, out maxTestAltitude, ref testBodyIdx);
-
-
+                                sb.AppendEx("Optimum altitude", String.Format((tc.optimumExists ? ("{0:N1} Km" + (tc.optimumBeyondSOI ? " (beyond SOI)" : "")) : "none (insufficient drives?)"), tc.optimumAltitude / 1000));
 
                                 windowContent.Add(new GuiElement()
                                 {
                                     type = "editortext",
                                     text = sb.ToString(),
-                                    isDest = true,
                                     color = null,
-                                    testAltitude = (float)(tc.targetAltitude / 1000),
-                                    minAltitude = minTestAltitude,
-                                    maxAltitude = maxTestAltitude,
                                 });
                             }
                         }
@@ -727,18 +590,19 @@ namespace ScienceFoundry.FTL
 
                 }
             }
-        }
-        void Update()
-        {
-            if (doJump)
+            else
             {
-                TargetSuccess tc = null;
-                if (targetSuccessList.TryGetValue(vessel.protoVessel.vesselID.ToString(), out tc))
+                if (doJump)
                 {
-                    ExecuteJump();
-                    doJump = false;
+                    TargetSuccess tc = null;
+                    if (targetSuccessList.TryGetValue(vessel.protoVessel.vesselID.ToString(), out tc))
+                    {
+                        ExecuteJump();
+                        doJump = false;
+                    }
                 }
             }
+
         }
 
         bool doJump = false;
@@ -810,7 +674,7 @@ namespace ScienceFoundry.FTL
                             AppendLabel("Required force", String.Format("{0:N1} iN", tc.neededForce));
                             if (VesselInFlight(Source) && VesselInFlight(Destination) && Source != Destination && Destination != null && VesselHasActiveBeacon(Destination))
                                 AppendLabel("Success probability", String.Format("{0:N0} %", tc.successProbability * 100));
-                            AppendLabel("Optimum departure altitude", String.Format((tc.optimumExists ? ("{0:N1} Km" + (tc.optimumBeyondSOI ? " (beyond SOI)" : "")) : "none (insufficient drives?)"), tc.optimumAltitude / 1000));
+                            AppendLabel("Optimum altitude", String.Format((tc.optimumExists ? ("{0:N1} Km" + (tc.optimumBeyondSOI ? " (beyond SOI)" : "")) : "none (insufficient drives?)"), tc.optimumAltitude / 1000));
                         }
                     }
                     else
@@ -840,7 +704,6 @@ namespace ScienceFoundry.FTL
                             type = "header",
                             text = sb.ToString(),
                             color = "yellow",
-                            isDest = false,
                             clicked = () => { targetVesselID = Guid.Empty; FlightGlobals.fetch.SetVesselTarget(null); },
                         });
 
@@ -863,7 +726,7 @@ namespace ScienceFoundry.FTL
                                         sb.AppendEx(jumpResource + " needed", String.Format("{0:N1}", tc.neededResourceAmt));
                                     if (VesselInFlight(Source) && VesselInFlight(Destination) && Source != Destination && Destination != null && VesselHasActiveBeacon(Destination))
                                         sb.AppendEx("Success probability", String.Format("{0:N0} %", tc.successProbability * 100));
-                                    sb.AppendEx("Optimum departure altitude", String.Format((tc.optimumExists ? ("{0:N1} Km" + (tc.optimumBeyondSOI ? " (beyond SOI)" : "")) : "none (insufficient drives?)"), tc.optimumAltitude / 1000));
+                                    sb.AppendEx("Optimum altitude", String.Format((tc.optimumExists ? ("{0:N1} Km" + (tc.optimumBeyondSOI ? " (beyond SOI)" : "")) : "none (insufficient drives?)"), tc.optimumAltitude / 1000));
                                     sb.AppendEx(vessel == Destination ? @"     \ - - - - - - Selected target - - - - - - /     " : @"     \ - - - - - - Click to select - - - - - - /     ");
 
                                     windowContent.Add(new GuiElement()
@@ -871,7 +734,6 @@ namespace ScienceFoundry.FTL
                                         type = "button",
                                         text = sb.ToString(),
                                         color = (vessel == Destination ? "green" : null),
-                                        isDest = true,
                                         clicked = () => { targetVesselID = vessel.protoVessel.vesselID; FlightGlobals.fetch.SetVesselTarget(vessel); },
                                     });
                                 }
@@ -899,7 +761,6 @@ namespace ScienceFoundry.FTL
             }
             base.OnUpdate();
         }
-
 
         //------------------------------ CORE METHODS ---------------------------------------------
 
@@ -1205,7 +1066,7 @@ namespace ScienceFoundry.FTL
                     windowPosition.width = WIDTH;
                 lastKSPSkin = HighLogic.CurrentGame.Parameters.CustomParams<FTLSettings>().KSPSkin;
             }
-            if (windowVisible && !hidden)
+            if (windowVisible && ! hidden)
                 windowPosition = ClickThruBlocker.GUILayoutWindow(523429, windowPosition, DisplayDestinations, "FTL Possible Destinations");
 
         }
@@ -1236,33 +1097,24 @@ namespace ScienceFoundry.FTL
                 {
                     GUIStyle s = e.color == "yellow" ? yellow : e.color == "green" ? green : normal;
                     GUILayout.TextField(e.text, s);
-#if true
+#if false
                     // this is for a future feature, where the destination craft can have it's test orbit variable in the editor for testing purposes
                     GUILayout.EndHorizontal();
                     GUILayout.BeginHorizontal();
-                    float newtestAltitude = GUILayout.HorizontalSlider(e.testAltitude, e.minAltitude, e.maxAltitude);
+                    float newtestAltitude = GUILayout.HorizontalSlider(testAltitude, minTestAltitude, maxTestAltitude);
 #endif
                 }
                 if (e.type == "leftright")
                 {
                     if (GUILayout.Button("<-", GUILayout.Width(30)))
                     {
-                        if (e.isDest == false)
+                        testBodyIdx--;
+                        if (testBodyIdx < 0)
                         {
-                            testBodyIdx--;
-                            if (testBodyIdx < 0)
-                                testBodyIdx = bodiesList.Count() - 1;
-
-                            CalcOriginTestAltitudes(bodiesList[testBodyIdx].body);
+                            testBodyIdx = bodiesList.Count() - 1;
                         }
-                        else
-                        {
-                            testDestBodyIdx--;
-                            if (testDestBodyIdx < 0)
-                                testDestBodyIdx = bodiesList.Count() - 1;
 
-                            CalcDestinationTestAltitudes(bodiesList[testDestBodyIdx].body);
-                        }
+                        CalcTestAltitudes(bodiesList[testBodyIdx].body);
                         SingleTargetUpdate();
 
                     }
@@ -1270,52 +1122,26 @@ namespace ScienceFoundry.FTL
                     GUILayout.Label(e.text, s);
                     if (GUILayout.Button("->", GUILayout.Width(30)))
                     {
-                        if (e.isDest == false)
-                        {
-                            testBodyIdx++;
-                            if (testBodyIdx >= bodiesList.Count())
-                                testBodyIdx = 0;
-                            CalcOriginTestAltitudes(bodiesList[testBodyIdx].body);
-                        }
-                        else
-                        {
-                            testDestBodyIdx++;
-                            if (testDestBodyIdx >= bodiesList.Count())
-                                testDestBodyIdx = 0;
-                            CalcDestinationTestAltitudes(bodiesList[testDestBodyIdx].body);
-                        }
+                        testBodyIdx++;
+                        if (testBodyIdx >= bodiesList.Count())
+                            testBodyIdx = 0;
 
+                        CalcTestAltitudes(bodiesList[testBodyIdx].body);
                         SingleTargetUpdate();
                     }
 
                 }
                 if (e.type == "slider")
                 {
-                    if (e.isDest == false)
+                    GUIStyle s = e.color == "yellow" ? yellow : e.color == "green" ? green : normal;
+                    GUILayout.Label(e.text, s);
+                    GUILayout.EndHorizontal();
+                    GUILayout.BeginHorizontal();
+                    float newtestAltitude = GUILayout.HorizontalSlider(testAltitude, minTestAltitude, maxTestAltitude);
+                    if (newtestAltitude != testAltitude)
                     {
-                        GUIStyle s = e.color == "yellow" ? yellow : e.color == "green" ? green : normal;
-                        GUILayout.Label(e.text, s);
-                        GUILayout.EndHorizontal();
-                        GUILayout.BeginHorizontal();
-                        float newtestAltitude = GUILayout.HorizontalSlider(testAltitude, minTestAltitude, maxTestAltitude);
-                        if (newtestAltitude != testAltitude)
-                        {
-                            testAltitude = newtestAltitude;
-                            SingleTargetUpdate();
-                        }
-                    }
-                    else
-                    {
-                        GUIStyle s = e.color == "yellow" ? yellow : e.color == "green" ? green : normal;
-                        GUILayout.Label(e.text, s);
-                        GUILayout.EndHorizontal();
-                        GUILayout.BeginHorizontal();
-                        float newtestDestAltitude = GUILayout.HorizontalSlider(testDestAltitude, minTestDestAltitude, maxTestDestAltitude);
-                        if (newtestDestAltitude != testDestAltitude)
-                        {
-                            testDestAltitude = newtestDestAltitude;
-                            SingleTargetUpdate();
-                        }
+                        testAltitude = newtestAltitude;
+                        SingleTargetUpdate();
                     }
                 }
                 if (e.type == "space")
@@ -1351,7 +1177,7 @@ namespace ScienceFoundry.FTL
             sb.Append("- Required force \n");
             sb.Append("- Required electricity \n");
             sb.Append("- Success probability \n");
-            sb.Append("- Optimum departure altitude \n");
+            sb.Append("- Optimum altitude \n");
             return sb.ToString();
         }
 
@@ -1489,6 +1315,6 @@ namespace ScienceFoundry.FTL
         }
 
 
+
     }
 }
-
