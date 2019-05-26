@@ -31,6 +31,9 @@ namespace ScienceFoundry.FTL
         [GameParameters.CustomFloatParameterUI("Multiple Drive Exponent", minValue = 1.0f, maxValue = 2.0f, stepCount = 101, displayFormat = "F2", asPercentage = false)]
         public float multipleDriveExponent = 1.4f;
 
+        [GameParameters.CustomParameterUI("Allow nonexistent test destination")]
+        public bool allowMissingDest = true;
+
         [GameParameters.CustomFloatParameterUI("Initial Window Position", minValue = 0.0f, maxValue = 100.0f, stepCount = 101, displayFormat = "F0", asPercentage = false)]
         public float initialWinPos = 50f;
 

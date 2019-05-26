@@ -135,3 +135,6 @@ unknown
 
 0.2.2.1
 	Version bump for CKAN on Spacedock
+
+0.2.2.2 (unreleased)
+	Optimized editor code in the FTLDriveModule to only do calculations when the vessel is modified
