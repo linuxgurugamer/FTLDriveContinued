@@ -84,6 +84,10 @@ unknown
 	Updated for 1.4.1
 	Added support for ClickThroughBlocker
 
+0.2.2.2
+	Version bump for 1.7.2
+	Updated AssemblyVersion.tt
+
 0.2.1.1
 	Updated change log
 
