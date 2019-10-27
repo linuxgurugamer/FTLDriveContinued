@@ -1,3 +1,5 @@
+ChangeLog
+
 unknown
 	Textures changed to dds (thanks @Deimos Rast)
 
@@ -139,3 +141,7 @@ unknown
 
 0.2.2.1
 	Version bump for CKAN on Spacedock
+
+0.2.3
+	Added InstallChecker
+	Updated for KSP 1.8
