@@ -145,3 +145,6 @@ unknown
 0.2.3
 	Added InstallChecker
 	Updated for KSP 1.8
+
+0.2.3.1
+	Fixed vars initialization

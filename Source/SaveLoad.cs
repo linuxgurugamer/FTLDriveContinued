@@ -7,15 +7,15 @@ using UnityEngine;
 namespace ScienceFoundry.FTL
 {
     [KSPAddon(KSPAddon.Startup.SpaceCentre, true)]
-    public  class SaveLoad : MonoBehaviour
+    public class SaveLoad : MonoBehaviour
     {
         //public SaveLoad Instance;
-        public static readonly String ROOT_PATH = KSPUtil.ApplicationRootPath;
-        private static readonly String CONFIG_BASE_FOLDER = ROOT_PATH + "GameData/";
-        private static String FTL_BASE_FOLDER = CONFIG_BASE_FOLDER + "FTLDriveContinued/";
-        private static String FTL_CFG_FOLDER = FTL_BASE_FOLDER + "PluginData";
-        private static String FTL_CFG_FILE = FTL_CFG_FOLDER + "/FTL.cfg";
-        private static String FTL_NODE = "FTL";
+        public static String ROOT_PATH;
+        private static String CONFIG_BASE_FOLDER;
+        private static String FTL_BASE_FOLDER;
+        private static String FTL_CFG_FOLDER;
+        private static String FTL_CFG_FILE;
+        private static String FTL_NODE;
 
         public static Vector2 editor;
         public static Vector2 flight;
@@ -28,6 +28,16 @@ namespace ScienceFoundry.FTL
             if (value == null)
                 return oldvalue.ToString();
             return value;
+        }
+
+        void Awake()
+        {
+            ROOT_PATH = KSPUtil.ApplicationRootPath;
+            CONFIG_BASE_FOLDER = ROOT_PATH + "GameData/";
+            FTL_BASE_FOLDER = CONFIG_BASE_FOLDER + "FTLDriveContinued/";
+            FTL_CFG_FOLDER = FTL_BASE_FOLDER + "PluginData";
+            FTL_CFG_FILE = FTL_CFG_FOLDER + "/FTL.cfg";
+            FTL_NODE = "FTL";
         }
 
         void Start()
@@ -53,8 +63,9 @@ namespace ScienceFoundry.FTL
             flight.y = winpos.y;
             flightOK = true;
         }
-        public static  void Save()
-        {;
+        public static void Save()
+        {
+            ;
             ConfigNode configFile = new ConfigNode();
             ConfigNode node = new ConfigNode(FTL_NODE);
             if (editorOK)
