@@ -152,3 +152,6 @@ unknown
 0.2.3.2
 	Added AssemblyFileVersion
 	Updated version file for 1.12
+
+0.2.4.0
+    Major bugfixes

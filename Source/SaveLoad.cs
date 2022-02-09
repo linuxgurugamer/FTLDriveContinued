@@ -20,8 +20,8 @@ namespace ScienceFoundry.FTL
         public static Vector2 editor;
         public static Vector2 flight;
 
-        public static bool editorOK = false;
-        public static bool flightOK = false;
+        public static bool editorOK;
+        public static bool flightOK;
 
         static string SafeLoad(string value, float oldvalue)
         {
@@ -30,7 +30,7 @@ namespace ScienceFoundry.FTL
             return value;
         }
 
-        void Awake()
+        static void Awake()
         {
             ROOT_PATH = KSPUtil.ApplicationRootPath;
             CONFIG_BASE_FOLDER = ROOT_PATH + "GameData/";
@@ -47,7 +47,7 @@ namespace ScienceFoundry.FTL
             DontDestroyOnLoad(this);
             //GameEvents.onGameSceneLoadRequested
         }
-        void OnDestroy()
+        static void OnDestroy()
         {
             Save();
         }
@@ -65,7 +65,7 @@ namespace ScienceFoundry.FTL
         }
         public static void Save()
         {
-            ;
+
             ConfigNode configFile = new ConfigNode();
             ConfigNode node = new ConfigNode(FTL_NODE);
             if (editorOK)

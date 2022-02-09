@@ -19,20 +19,15 @@ namespace FTLDriveContinued
     [KSPAddon(KSPAddon.Startup.Instantly, true)]
     internal class Startup : MonoBehaviour
     {
-        private void Start()
+        private static void Start()
         {
             string v = "n/a";
-            AssemblyTitleAttribute attributes = (AssemblyTitleAttribute)Attribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyTitleAttribute), false);
+            AssemblyTitleAttribute attributes = (AssemblyTitleAttribute)Attribute.GetCustomAttribute(Assembly.GetExecutingAssembly(),
+                typeof(AssemblyTitleAttribute), false);
             string title = attributes?.Title;
-            if (title == null)
-            {
-                title = "TitleNotAvailable";
-            }
+            title = title ?? "TitleNotAvailable";
             v = Assembly.GetExecutingAssembly().FullName;
-            if (v == null)
-            {
-                v = "VersionNotAvailable";
-            }
+            v = v ?? "VersionNotAvailable";
             Debug.Log("[" + title + "] Version " + v);
         }
     }
@@ -86,6 +81,7 @@ namespace FTLDriveContinued
         {
             try
             {
+                // TODO: fill this up
             }
             catch (Exception ex)
             {
@@ -96,5 +92,3 @@ namespace FTLDriveContinued
         }
     }
 }
-
-

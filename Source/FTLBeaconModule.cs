@@ -11,7 +11,7 @@ namespace ScienceFoundry.FTL
         //------------------------------ FIELDS ---------------------------------------------------
 
         [KSPField(isPersistant = true)]
-        public bool beaconActivated = false;
+        public bool beaconActivated;
 
 
         //------------------------------ PARTMODULE OVERRIDES -------------------------------------
@@ -67,8 +67,8 @@ namespace ScienceFoundry.FTL
         private enum RampDirection { none, up, down };
 
         private RampDirection rampDirection = RampDirection.none;
-        private float ramp = 0;
-        private int animStage = 0;
+        private float ramp;
+        private int animStage;
         private string[] animationStages = { };
 
 
@@ -100,7 +100,7 @@ namespace ScienceFoundry.FTL
 
                 if (beaconActivated)
                     animation.Play(animationName);
-            };
+            }
         }
 
         public void UpdateAnimations()
@@ -115,9 +115,9 @@ namespace ScienceFoundry.FTL
             for (int i = mas.Count - 1; i >= 0; i--)
             {
                 var anim = mas[i];
-            //}
-            //foreach (var anim in part.FindModelAnimators(activeAnim))
-            //{
+                //}
+                //foreach (var anim in part.FindModelAnimators(activeAnim))
+                //{
                 if (anim != null)
                 {
                     float origSpd = anim[activeAnim].speed;
@@ -146,7 +146,7 @@ namespace ScienceFoundry.FTL
                         }
                     }
 
-                    
+
                     if (curAnimStage < animationStages.Length - 1)
                     {
                         anim[activeAnim].normalizedTime = ramp;

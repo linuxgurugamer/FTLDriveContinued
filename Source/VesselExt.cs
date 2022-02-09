@@ -9,7 +9,7 @@ namespace ScienceFoundry.FTL
 {
     public static class VesselExt
     {
-        public static void Explode(this Vessel self)
+        public static void Explode(this IShipconstruct self)
         {
             //foreach (var p in self.Parts)
             for (int i = self.Parts.Count - 1; i >= 0; i--)
@@ -28,7 +28,7 @@ namespace ScienceFoundry.FTL
         public static void Rendezvous(this Vessel self, Vessel destination, double leadTime = 5d)
         {
             var o = destination.orbit;
-            var newOrbit = CreateOrbit(o.inclination, o.eccentricity, o.semiMajorAxis, o.LAN, o.argumentOfPeriapsis, o.meanAnomalyAtEpoch, 
+            var newOrbit = CreateOrbit(o.inclination, o.eccentricity, o.semiMajorAxis, o.LAN, o.argumentOfPeriapsis, o.meanAnomalyAtEpoch,
                                        o.epoch - leadTime, o.referenceBody);
 
             self.SetOrbit(newOrbit);
@@ -52,14 +52,10 @@ namespace ScienceFoundry.FTL
             }
 
             vessel.GoOnRails();
-
             var oldBody = vessel.orbitDriver.orbit.referenceBody;
-
             vessel.orbitDriver.UpdateOrbit(newOrbit);
-
             vessel.orbitDriver.pos = vessel.orbit.pos.xzy;
             vessel.orbitDriver.vel = vessel.orbit.vel;
-
             var newBody = vessel.orbitDriver.orbit.referenceBody;
 
             if (newBody != oldBody)
@@ -84,11 +80,8 @@ namespace ScienceFoundry.FTL
             orbit.Init();
             orbit.UpdateFromUT(Planetarium.GetUniversalTime());
 
-            if (orbit.referenceBody != newOrbit.referenceBody)
-            {
-                if (orbitDriver.OnReferenceBodyChange != null)
-                    orbitDriver.OnReferenceBodyChange(newOrbit.referenceBody);
-            }
+            if (orbit.referenceBody != newOrbit.referenceBody && orbitDriver.OnReferenceBodyChange != null)
+                orbitDriver.OnReferenceBodyChange(newOrbit.referenceBody);
         }
 
         internal static Orbit CreateOrbit(double inc, double e, double sma, double lan, double w, double mEp, double epoch, CelestialBody body)
