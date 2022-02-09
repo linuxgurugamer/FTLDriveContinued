@@ -994,8 +994,17 @@ namespace ScienceFoundry.FTL
                     }
                     else
                     {
-                        Source.Explode();
-                        LogsManager.DisplayMsg("Jump failed!");
+                        // Chance the ship survives, but the crew is subject to an "Event Horizon" situation.
+                        if(rng.Next(10) > 4)
+                        {
+                            Source.MurderCrew();
+                            LogsManager.DisplayMsg("Jump failed. The ship is intact, but where did the crew go???");
+                        }
+                        else
+                        {
+                            Source.Explode();
+                            LogsManager.DisplayMsg("Jump failed!");
+                        }
                     }
                 }
             }

@@ -155,3 +155,4 @@ unknown
 
 0.2.4.0
     Major bugfixes
+    Failed jump now has a 50% chance of keeping the ship, but killing the crew ("Event Horizon" reference)
