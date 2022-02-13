@@ -8,7 +8,7 @@ namespace ScienceFoundry.FTL
 {
     public class DynamicDisplay : PartModule
     {
-        public int statuscount = 0;
+        public int statuscount;
 
         [KSPField(guiActive = false, guiActiveEditor = false)]
         public string status01;

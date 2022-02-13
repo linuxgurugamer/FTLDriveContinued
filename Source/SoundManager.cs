@@ -5,7 +5,7 @@ namespace ScienceFoundry.FTL
 {
     static class SoundManager
     {
-        private static Dictionary<string, AudioClip> Sounds = new Dictionary<string, AudioClip>();
+        private static readonly Dictionary<string, AudioClip> Sounds = new Dictionary<string, AudioClip>();
 
         public static void LoadSound(string filePath, string soundName)
         {
@@ -35,8 +35,7 @@ namespace ScienceFoundry.FTL
 
         public static void CreateFXSound(Part part, FXGroup group, string defaultSound, bool loop, float maxDistance = 30f)
         {
-            group.audio = (part as UnityEngine.Component ?? Camera.main).gameObject.AddComponent<AudioSource>();
-
+            group.audio = (part as UnityEngine.Component ? (UnityEngine.Component)part : Camera.main).gameObject.AddComponent<AudioSource>();
             group.audio.volume = GameSettings.SHIP_VOLUME;
             group.audio.rolloffMode = AudioRolloffMode.Linear;
             group.audio.dopplerLevel = 0f;

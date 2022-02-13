@@ -27,19 +27,19 @@ namespace ScienceFoundry.FTL
         public string jumpResourceDef = "";
 
         // used for displaying current status, get recomputed on occasion, static because only one active vessel
-        public static FTLDriveModule[] availableDrives;
-        public static double totalGeneratedForce;
-        public static double totalChargeRate;
-        public static double totalChargeTime;
-        public static double totalChargeCapacity;
+        private static FTLDriveModule[] availableDrives;
+        private static double totalGeneratedForce;
+        private static double totalChargeRate;
+        private static double totalChargeTime;
+        private static double totalChargeCapacity;
         // public static double successProbability;
 
-        public static double totalResourceAmtNeeded;
+        private static double totalResourceAmtNeeded;
 
         // stateful variables, cannot be recomputed from other variables
-        public static bool isSpinning;
-        public static double totalChargeStored;
-        public static bool isReady;
+        private static bool isSpinning;
+        private static double totalChargeStored;
+        private static bool isReady;
 
         // used for displaying GUI window
         public struct GuiElement
@@ -50,31 +50,27 @@ namespace ScienceFoundry.FTL
             public Action clicked;
         }
 
-        public static bool windowVisible = false;
-        public static Rect windowPosition;
-        public static List<GuiElement> windowContent = new List<GuiElement>();
+        private static bool windowVisible;
+        private static Rect windowPosition;
+        private static readonly List<GuiElement> windowContent = new List<GuiElement>();
 
-        static CelestialBody testBody = null;
+        static CelestialBody testBody;
         static int testBodyIdx = -1;
         static float testAltitude = 70;
         static float minTestAltitude = 70;
         static float maxTestAltitude = 50000;
 
         // For resource usage
-        double resourceAmtAvailable = 0;
-        double maxAmount = 0;
+        double resourceAmtAvailable;
+        double maxAmount;
         public string jumpResource = "";
-        public double jumpResourceECmultiplier = 0;
+        public double jumpResourceECmultiplier;
 
         int resourceID = -1;
-
-
-
         const int WIDTH = 250;
         const int HEIGHT = 250;
         const int KSP_SKIN_WIDTH = 320;
-
-        bool hidden = false;
+        bool hidden;
 
         //------------------------------ PARTMODULE OVERRIDES -------------------------------------
         void CalculateValues(bool inFlight = true)
@@ -99,7 +95,7 @@ namespace ScienceFoundry.FTL
                 totalResourceAmtNeeded = jumpResourceECmultiplier * totalChargeRate * totalChargeTime;
         }
 
-        double _neededResourceAmt = 0;
+        double _neededResourceAmt;
         Guid targetVesselID;
 
         double neededResourceAmt(Guid targetedVesselID, double neededForce = 0)
@@ -122,7 +118,7 @@ namespace ScienceFoundry.FTL
             return a_neededResourceAmt;
         }
 
-        void CalcTestAltitudes(CelestialBody body)
+        static void CalcTestAltitudes(CelestialBody body)
         {
             testBody = body;
             testAltitude = (float)body.atmosphereDepth / 1000 + 1;
@@ -167,7 +163,7 @@ namespace ScienceFoundry.FTL
             }
         }
 
-        static List<BodyRef> bodiesList = null;
+        static List<BodyRef> bodiesList;
 
         void AddBodiesList(CelestialBody parent, CelestialBody body)
         {
@@ -189,7 +185,7 @@ namespace ScienceFoundry.FTL
             AddBodiesList(null, Planetarium.fetch.Sun);
         }
 
-        static Dictionary<string, TargetSuccess> targetSuccessList = new Dictionary<string, TargetSuccess>();
+        static readonly Dictionary<string, TargetSuccess> targetSuccessList = new Dictionary<string, TargetSuccess>();
         /// <summary>
         /// To be used in a CoRoutine to calculate the values periodically
         /// </summary>
@@ -215,17 +211,15 @@ namespace ScienceFoundry.FTL
             double jumpResourceECmultiplier;
 
             public double neededResourceAmt;
-
-            Func<string, string> trimthe = s => s.StartsWith("The") ? s.Substring(3).Trim() : s;
+            readonly Func<string, string> trimthe = s => s.StartsWith("The") ? s.Substring(3).Trim() : s;
 
             double NeededResourceAmt(Guid targetedVesselID, double neededForce)
             {
                 double forceChargeRate = totalChargeRate * Time.deltaTime / totalChargeCapacity * totalGeneratedForce;
                 double neededChargeTime = neededForce / forceChargeRate * Time.deltaTime;
-                var neededResourceAmt = jumpResourceECmultiplier * Math.Min(neededChargeTime, chargeTime) * totalChargeRate;
-
-                LogsManager.Info("targetedVesselID: " + targetedVesselID + ",   a_neededResourceAmt: " + neededResourceAmt);
-                return neededResourceAmt;
+                double neededResources = jumpResourceECmultiplier * Math.Min(neededChargeTime, chargeTime) * totalChargeRate;
+                LogsManager.Info("targetedVesselID: " + targetedVesselID + ",   a_neededResourceAmt: " + neededResources);
+                return neededResources;
             }
 
             void Init(double jumpResourceECmultiplier, double chargeTime, Vessel Source, Vessel targetVessel, Orbit sourceOrbit, Orbit destOrbit)
@@ -239,24 +233,19 @@ namespace ScienceFoundry.FTL
             {
                 targetBodyName = trimthe(destOrbit.referenceBody.name);
                 targetAltitude = destOrbit.altitude;
-
                 gravsource = GravitationalForcesAll(sourceOrbit.referenceBody, sourceOrbit.altitude);
                 gravsourceprim = gravsource - GravitationalForce(sourceOrbit.referenceBody, sourceOrbit.altitude);
                 gravdest = GravitationalForcesAll(destOrbit);
                 mass = Source.totalMass * 1000;
                 grav0 = sourceOrbit.referenceBody.gravParameter;
                 radius0 = sourceOrbit.referenceBody.Radius;
-
                 neededForce = (gravsource + gravdest) * mass;
-
                 successProbability = Math.Min(1, Math.Max(0, totalGeneratedForce / neededForce));
-                  optimumBeyondSOI = false;
+                optimumBeyondSOI = false;
                 optimumAltitude = 0;
 
-                if (jumpResourceECmultiplier > 0)
-                    neededResourceAmt = NeededResourceAmt(targetVessel.protoVessel.vesselID, neededForce);
-                else
-                    neededResourceAmt = 0;
+                neededResourceAmt = (jumpResourceECmultiplier > 0)
+                    ? NeededResourceAmt(targetVessel.protoVessel.vesselID, neededForce) : 0;
 
                 optimumExists = CalculateOptimumAltitude(Source, mass, totalGeneratedForce, gravsourceprim, gravdest, sourceOrbit.referenceBody, out optimumBeyondSOI, out optimumAltitude);
 
@@ -286,7 +275,7 @@ namespace ScienceFoundry.FTL
         {
             if (HighLogic.LoadedSceneIsEditor && EditorLogic.fetch.ship != null)
             {
-                Vessel sourceVessel = new Vessel();
+                Vessel sourceVessel = gameObject.AddComponent<Vessel>();
                 sourceVessel.loaded = false;
                 sourceVessel.totalMass = EditorLogic.fetch.ship.GetTotalMass();
 
@@ -296,11 +285,11 @@ namespace ScienceFoundry.FTL
                 testOrigOrbit.referenceBody = FlightGlobals.GetHomeBody();
                 testOrigOrbit.altitude = sourceOrbit;
 
-                for (int i = HighLogic.CurrentGame.flightState.protoVessels.Count() - 1; i >= 0; i--)
+                for (int i = HighLogic.CurrentGame.flightState.protoVessels.Count - 1; i >= 0; i--)
                 {
                     ProtoVessel protoVessel = HighLogic.CurrentGame.flightState.protoVessels[i];
 
-                    Vessel targetVessel = new Vessel();
+                    Vessel targetVessel = gameObject.AddComponent<Vessel>();
                     targetVessel.loaded = false;
                     targetVessel.protoVessel = protoVessel;
                     if (VesselHasActiveBeacon(targetVessel))
@@ -380,8 +369,8 @@ namespace ScienceFoundry.FTL
 
             float leftPos = (HighLogic.CurrentGame.Parameters.CustomParams<FTLSettings>().initialWinPos) / 100 * (Screen.width - WIDTH);
 
-            windowPosition = new Rect(leftPos , (Screen.height - HEIGHT) / 2, WIDTH, HEIGHT);
-            
+            windowPosition = new Rect(leftPos, (Screen.height - HEIGHT) / 2, WIDTH, HEIGHT);
+
             if (jumpResourceDef != "")
             {
                 string[] st = jumpResourceDef.Split(',');
@@ -389,6 +378,7 @@ namespace ScienceFoundry.FTL
                 try
                 {
                     jumpResourceECmultiplier = Double.Parse(st[1].Trim());
+                    resetPower(Source);
                 }
                 catch
                 {
@@ -412,13 +402,13 @@ namespace ScienceFoundry.FTL
             windowVisible = false;
 
             if (!periodicTargetUpdatesActive)
-                StartCoroutine("PeriodicTargetUpdates");
+                StartCoroutine(nameof(PeriodicTargetUpdates));
 
             GameEvents.onHideUI.Add(OnHideUI);
             GameEvents.onShowUI.Add(OnShowUI);
         }
 
-        static bool periodicTargetUpdatesActive = false;
+        static bool periodicTargetUpdatesActive;
 
 
         IEnumerator PeriodicTargetUpdates()
@@ -456,7 +446,7 @@ namespace ScienceFoundry.FTL
             GameEvents.onVesselWasModified.Remove(onVesselWasModified);
             periodicTargetUpdatesActive = false;
         }
- 
+
         private void OnHideUI()
         {
             hidden = true;
@@ -480,7 +470,8 @@ namespace ScienceFoundry.FTL
             base.OnLoad(node);
         }
 
-        static bool CalculateOptimumAltitude(Vessel Source, double shipMass, double totalGeneratedForce, double gravsourceprim, double gravdest, CelestialBody referenceBody, out bool optimumBeyondSOI, out double optimumAltitude)
+        static bool CalculateOptimumAltitude(Vessel Source, double shipMass, double totalGeneratedForce,
+            double gravsourceprim, double gravdest, CelestialBody referenceBody, out bool optimumBeyondSOI, out double optimumAltitude)
         {
             // Equations are shown on paper, image file in the repository.
             double B = 2 * referenceBody.Radius;
@@ -490,14 +481,13 @@ namespace ScienceFoundry.FTL
             optimumAltitude = (-B + Math.Sqrt(delta)) / 2;
 
 
-            if (Source != null && Source.orbit != null)
-                optimumBeyondSOI = optimumAltitude > Source.orbit.referenceBody.sphereOfInfluence;
-            else
-                optimumBeyondSOI = optimumAltitude > FlightGlobals.GetHomeBody().sphereOfInfluence;
+            optimumBeyondSOI = Source != null && Source.orbit != null
+                ? optimumAltitude > Source.orbit.referenceBody.sphereOfInfluence
+                : optimumAltitude > FlightGlobals.GetHomeBody().sphereOfInfluence;
             return optimumExists;
         }
 
-        Func<string, string> trimthe = s => s.StartsWith("The") ? s.Substring(3).Trim() : s;
+        readonly Func<string, string> trimthe = s => s.StartsWith("The") ? s.Substring(3).Trim() : s;
 
         void Update()
         {
@@ -512,7 +502,7 @@ namespace ScienceFoundry.FTL
                 if (windowVisible)
                 {
                     windowContent.Clear();
-                    
+
                     CalculateValues(false);
 #if false
                     StringBuilder sb = new StringBuilder();
@@ -522,13 +512,13 @@ namespace ScienceFoundry.FTL
                     if (totalResourceAmtNeeded > 0)
                         sb.AppendEx("Max " + jumpResource + " needed", String.Format("{0:N1}", totalResourceAmtNeeded));
 #endif
-                    windowContent.Add(new GuiElement()
+                    windowContent.Add(new GuiElement
                     {
                         type = "leftright",
                         text = String.Format("Test body: {0}", testBody.name),
                         color = null,
                     });
-                    windowContent.Add(new GuiElement()
+                    windowContent.Add(new GuiElement
                     {
                         type = "slider",
                         text = String.Format("Test altitude: {0:N1} Km", testAltitude),
@@ -547,18 +537,18 @@ namespace ScienceFoundry.FTL
                     if (totalResourceAmtNeeded > 0)
                         sb.AppendEx("Max " + jumpResource + " needed", String.Format("{0:N1}", totalResourceAmtNeeded));
 
-                    windowContent.Add(new GuiElement()
+                    windowContent.Add(new GuiElement
                     {
                         type = "header",
                         text = sb.ToString(),
                         color = "yellow",
                     });
 
-                    for (int i = HighLogic.CurrentGame.flightState.protoVessels.Count() - 1; i >= 0; i--)
+                    for (int i = HighLogic.CurrentGame.flightState.protoVessels.Count - 1; i >= 0; i--)
                     {
                         ProtoVessel vessel = HighLogic.CurrentGame.flightState.protoVessels[i];
 
-                        Vessel v = new Vessel();
+                        Vessel v = gameObject.AddComponent<Vessel>();
                         v.loaded = false;
                         v.protoVessel = vessel;
 
@@ -578,7 +568,7 @@ namespace ScienceFoundry.FTL
                                 sb.AppendEx("Success probability", String.Format("{0:N0} %", tc.successProbability * 100));
                                 sb.AppendEx("Optimum altitude", String.Format((tc.optimumExists ? ("{0:N1} Km" + (tc.optimumBeyondSOI ? " (beyond SOI)" : "")) : "none (insufficient drives?)"), tc.optimumAltitude / 1000));
 
-                                windowContent.Add(new GuiElement()
+                                windowContent.Add(new GuiElement
                                 {
                                     type = "editortext",
                                     text = sb.ToString(),
@@ -605,7 +595,7 @@ namespace ScienceFoundry.FTL
 
         }
 
-        bool doJump = false;
+        bool doJump;
 
         public void FixedUpdate()
         {
@@ -628,11 +618,11 @@ namespace ScienceFoundry.FTL
                     {
                         if (isReady)
                         {
-                            part.RequestResource("ElectricCharge", 0.01 * totalChargeRate * (totalChargeStored / totalChargeCapacity) * Time.deltaTime);
+                            part.RequestResource("ElectricCharge", 0.01 * totalChargeRate * (totalChargeStored / totalChargeCapacity) * Time.fixedDeltaTime);
                         }
                         else
                         {
-                            totalChargeStored += part.RequestResource("ElectricCharge", totalChargeRate * Time.deltaTime);
+                            totalChargeStored += part.RequestResource("ElectricCharge", totalChargeRate * Time.fixedDeltaTime);
                             totalChargeStored = Math.Min(totalChargeCapacity, Math.Max(0, totalChargeStored));
                         }
 
@@ -699,7 +689,7 @@ namespace ScienceFoundry.FTL
                             sb.AppendEx(jumpResource + " needed", String.Format("{0:N1}", totalResourceAmtNeeded));
                         sb.AppendEx("Ship mass", String.Format("{0:N1} kg", Source.totalMass * 1000));
 
-                        windowContent.Add(new GuiElement()
+                        windowContent.Add(new GuiElement
                         {
                             type = "header",
                             text = sb.ToString(),
@@ -729,7 +719,7 @@ namespace ScienceFoundry.FTL
                                     sb.AppendEx("Optimum altitude", String.Format((tc.optimumExists ? ("{0:N1} Km" + (tc.optimumBeyondSOI ? " (beyond SOI)" : "")) : "none (insufficient drives?)"), tc.optimumAltitude / 1000));
                                     sb.AppendEx(vessel == Destination ? @"     \ - - - - - - Selected target - - - - - - /     " : @"     \ - - - - - - Click to select - - - - - - /     ");
 
-                                    windowContent.Add(new GuiElement()
+                                    windowContent.Add(new GuiElement
                                     {
                                         type = "button",
                                         text = sb.ToString(),
@@ -764,18 +754,22 @@ namespace ScienceFoundry.FTL
 
         //------------------------------ CORE METHODS ---------------------------------------------
 
-        private Vessel Source
+        private static Vessel Source
         {
             get => FlightGlobals.ActiveVessel;
         }
-        private Vessel Destination
+        private static Vessel Destination
         {
-            get => Source?.targetObject?.GetVessel();
+            get
+            {
+                if (Source.targetObject != null) return Source.targetObject.GetVessel(); // jump target
+                return Source; // no target, so target itself
+            }
         }
 
-        private IEnumerable<FTLDriveModule> FindAllSourceDrives(List<Part> parts)
+        private static IEnumerable<FTLDriveModule> FindAllSourceDrives(List<Part> parts)
         {
-            for (int i = parts.Count() - 1; i >= 0; i--)
+            for (int i = parts.Count - 1; i >= 0; i--)
             {
                 Part p = parts[i];
 
@@ -808,7 +802,7 @@ namespace ScienceFoundry.FTL
 
         // Following used in Editor
 
-        static private double GravitationalForcesAll(CelestialBody body, double altitude)
+        private static double GravitationalForcesAll(CelestialBody body, double altitude)
         {
             if (body == null) return 0;
             double amt = 0;
@@ -827,7 +821,7 @@ namespace ScienceFoundry.FTL
             return GravitationalForce(body, altitude) + amt;
         }
 
-        static private double GravitationalForce(CelestialBody body, double altitude)
+        private static double GravitationalForce(CelestialBody body, double altitude)
         {
             return (body.gravParameter / Square(altitude + body.Radius));
         }
@@ -837,14 +831,14 @@ namespace ScienceFoundry.FTL
             return x * x;
         }
 
-        void DisplayJumpPossibleMsg(string str, bool display)
+        static void DisplayJumpPossibleMsg(string str, bool display)
         {
             if (display)
                 ScreenMessages.PostScreenMessage(str, 4f, ScreenMessageStyle.UPPER_CENTER);
             //Debug.Log(str);
         }
 
-        private bool VesselInFlight(Vessel vessel)
+        private static bool VesselInFlight(Vessel vessel)
         {
             // This is the same thing as below, but is slightly faster, 3 instead of 5, also, if it		
             // fails one of the first, it doesn't check the following		
@@ -909,11 +903,11 @@ namespace ScienceFoundry.FTL
             return true;
         }
 
-        private bool VesselHasActiveBeacon(Vessel vessel)
+        private static bool VesselHasActiveBeacon(Vessel vessel)
         {
             if (vessel.loaded)
             {
-                for (int i = vessel.parts.Count() - 1; i >= 0; i--)
+                for (int i = vessel.parts.Count - 1; i >= 0; i--)
                 {
                     Part p = vessel.parts[i];
 
@@ -924,28 +918,26 @@ namespace ScienceFoundry.FTL
                             PartModule pm = p.Modules[i2];
 
                             //foreach (PartModule pm in p.Modules)
-                            if (pm.moduleName == "FTLBeaconModule")
-                                if (((FTLBeaconModule)pm).beaconActivated)
-                                    return true;
+                            if (pm.moduleName == "FTLBeaconModule" && ((FTLBeaconModule)pm).beaconActivated)
+                                return true;
                         }
                 }
                 return false;
             }
             else
             {
-                for (int i = vessel.protoVessel.protoPartSnapshots.Count() - 1; i >= 0; i--)
+                for (int i = vessel.protoVessel.protoPartSnapshots.Count - 1; i >= 0; i--)
                 {
                     ProtoPartSnapshot pps = vessel.protoVessel.protoPartSnapshots[i];
 
                     //foreach (ProtoPartSnapshot pps in vessel.protoVessel.protoPartSnapshots)
-                    for (int i2 = 0; i2 < pps.modules.Count(); i2++)
+                    for (int i2 = 0; i2 < pps.modules.Count; i2++)
                     {
                         ProtoPartModuleSnapshot m = pps.modules[i2];
 
                         //foreach (ProtoPartModuleSnapshot m in pps.modules)
-                        if (m.moduleName == "FTLBeaconModule")
-                            if (Convert.ToBoolean(m.moduleValues.GetValue("beaconActivated")))
-                                return true;
+                        if (m.moduleName == "FTLBeaconModule" && Convert.ToBoolean(m.moduleValues.GetValue("beaconActivated")))
+                            return true;
                     }
                 }
                 return false;
@@ -1002,11 +994,21 @@ namespace ScienceFoundry.FTL
                     }
                     else
                     {
-                        Source.Explode();
-                        LogsManager.DisplayMsg("Jump failed!");
+                        // Chance the ship survives, but the crew is subject to an "Event Horizon" situation.
+                        if(rng.Next(10) > 4)
+                        {
+                            Source.MurderCrew();
+                            LogsManager.DisplayMsg("Jump failed. The ship is intact, but where did the crew go???");
+                        }
+                        else
+                        {
+                            Source.Explode();
+                            LogsManager.DisplayMsg("Jump failed!");
+                        }
                     }
                 }
             }
+            resetPower(Source);
         }
 
         GameScenes lastSceneLoaded;
@@ -1037,9 +1039,9 @@ namespace ScienceFoundry.FTL
         GUIStyle normal;
         GUIStyle yellow;
         GUIStyle green;
-        bool initted = false;
+        bool initted;
         GUIStyle label;
-        bool lastKSPSkin = false;
+        bool lastKSPSkin;
         void OnGUI()
         {
             if (!initted)
@@ -1060,13 +1062,10 @@ namespace ScienceFoundry.FTL
             }
             if (lastKSPSkin != HighLogic.CurrentGame.Parameters.CustomParams<FTLSettings>().KSPSkin)
             {
-                if (HighLogic.CurrentGame.Parameters.CustomParams<FTLSettings>().KSPSkin)
-                    windowPosition.width = KSP_SKIN_WIDTH;
-                else
-                    windowPosition.width = WIDTH;
+                windowPosition.width = HighLogic.CurrentGame.Parameters.CustomParams<FTLSettings>().KSPSkin ? KSP_SKIN_WIDTH : WIDTH;
                 lastKSPSkin = HighLogic.CurrentGame.Parameters.CustomParams<FTLSettings>().KSPSkin;
             }
-            if (windowVisible && ! hidden)
+            if (windowVisible && !hidden)
                 windowPosition = ClickThruBlocker.GUILayoutWindow(523429, windowPosition, DisplayDestinations, "FTL Possible Destinations");
 
         }
@@ -1078,7 +1077,7 @@ namespace ScienceFoundry.FTL
             if (GUI.Button(new Rect(windowPosition.width - 23f, 2f, 18f, 13f), "x"))
                 windowVisible = false;
 
-            int i0 = windowContent.Count();
+            int i0 = windowContent.Count;
             for (int i = 0; i < i0; i++)
             {
                 GuiElement e = windowContent[i];
@@ -1111,7 +1110,7 @@ namespace ScienceFoundry.FTL
                         testBodyIdx--;
                         if (testBodyIdx < 0)
                         {
-                            testBodyIdx = bodiesList.Count() - 1;
+                            testBodyIdx = bodiesList.Count - 1;
                         }
 
                         CalcTestAltitudes(bodiesList[testBodyIdx].body);
@@ -1123,7 +1122,7 @@ namespace ScienceFoundry.FTL
                     if (GUILayout.Button("->", GUILayout.Width(30)))
                     {
                         testBodyIdx++;
-                        if (testBodyIdx >= bodiesList.Count())
+                        if (testBodyIdx >= bodiesList.Count)
                             testBodyIdx = 0;
 
                         CalcTestAltitudes(bodiesList[testBodyIdx].body);
@@ -1196,13 +1195,13 @@ namespace ScienceFoundry.FTL
         private enum RampDirection { none, up, down };
 
         private RampDirection rampDirection = RampDirection.none;
-        private float ramp = 0;
-        private int animStage = 0;
+        private float ramp;
+        private int animStage;
         private string[] animationStages = { };
 
         private FXGroup driveSound;
 
-        public void SetUpAnimation(string animationName, Part part, WrapMode wrapMode)
+        public static void SetUpAnimation(string animationName, Part part, WrapMode wrapMode)
         {
             foreach (var animation in part.FindModelAnimators(animationName))
             {
@@ -1212,10 +1211,10 @@ namespace ScienceFoundry.FTL
                 animationState.normalizedTime = 0f;
                 animationState.enabled = true;
                 animationState.wrapMode = wrapMode;
-            };
+            }
         }
 
-        public void ToggleAnimations()
+        public static void ToggleAnimations()
         {
             foreach (FTLDriveModule dm in availableDrives)
             {
@@ -1241,7 +1240,7 @@ namespace ScienceFoundry.FTL
             int curAnimStage = animStage;
 
             List<Animation> mas = part.FindModelAnimators(activeAnim).ToList();
-            for (int i = mas.Count() - 1; i >= 0; i--)
+            for (int i = mas.Count - 1; i >= 0; i--)
             {
                 Animation anim = mas[i];
                 //}
@@ -1314,7 +1313,39 @@ namespace ScienceFoundry.FTL
             }
         }
 
+        /// <summary>
+        /// Reset any NaN power to 0
+        /// </summary>
+        internal static void resetPower(Vessel v)
+        {
+            if (v is null) throw new ArgumentNullException(nameof(v));
 
+            // Reset batteries
+            PartResourceDefinition electricCharge = PartResourceLibrary.Instance.GetDefinition("ElectricCharge");
+            List<Part> ecToReset = v.Parts.FindAll(p => p.Resources.Contains(electricCharge.id)
+                && (p.GetResourceMass() < 1 || double.IsNaN(p.GetResourceMass())));
+
+            ecToReset.ForEach(p =>
+            {
+                foreach (PartResource r in p.Resources)
+                {
+                    r.amount = 0;
+                }
+            });
+
+            // Reset capacitors
+            PartResourceDefinition storedCharge = PartResourceLibrary.Instance.GetDefinition("StoredCharge");
+            List<Part> scToReset = v.Parts.FindAll(p => p.Resources.Contains(storedCharge.id)
+                && (p.GetResourceMass() < 1 || double.IsNaN(p.GetResourceMass())));
+
+            scToReset.ForEach(p =>
+            {
+                foreach (PartResource r in p.Resources)
+                {
+                    r.amount = 0;
+                }
+            });
+        }
 
     }
 }

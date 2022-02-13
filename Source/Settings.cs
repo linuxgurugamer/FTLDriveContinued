@@ -26,7 +26,7 @@ namespace ScienceFoundry.FTL
         public bool driveStopsUponVesselSwitch = true;
 
         [GameParameters.CustomParameterUI("Jump when success reaches 100%")]
-        public bool autoJump = false;
+        public bool autoJump;
 
         [GameParameters.CustomFloatParameterUI("Multiple Drive Exponent", minValue = 1.0f, maxValue = 2.0f, stepCount = 101, displayFormat = "F2", asPercentage = false)]
         public float multipleDriveExponent = 1.4f;
@@ -35,7 +35,7 @@ namespace ScienceFoundry.FTL
         public float initialWinPos = 50f;
 
         [GameParameters.CustomParameterUI("Use KSP skin")]
-        public bool KSPSkin = false;
+        public bool KSPSkin;
 
 
 
