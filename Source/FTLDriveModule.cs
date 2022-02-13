@@ -1318,7 +1318,7 @@ namespace ScienceFoundry.FTL
         /// </summary>
         internal static void resetPower(Vessel v)
         {
-            if (v is null) throw new ArgumentNullException(nameof(v));
+            if (v == null) throw new ArgumentNullException(nameof(v));
 
             // Reset batteries
             PartResourceDefinition electricCharge = PartResourceLibrary.Instance.GetDefinition("ElectricCharge");
