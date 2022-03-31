@@ -253,10 +253,18 @@ namespace ScienceFoundry.FTL
 
             public void ReCalc(Vessel Source, Vessel targetVessel, Orbit sourceOrbit, Orbit targetOrbit)
             {
+                LogsManager.Info("ReCalc");
                 Calc(Source, targetVessel, sourceOrbit, targetOrbit);
-                LogsManager.Info("Target vessel: " + vesselName + ",  neededForce: " + neededForce + ",  successProbability: " + successProbability + ",  optimumAltitude: " + optimumAltitude);
+                LogsManager.Info("ReCalc, Target vessel: " + vesselName + ",  neededForce: " + neededForce + ",  successProbability: " + successProbability + ",  optimumAltitude: " + optimumAltitude);
+                LogsManager.Info("ReCalc, sourceOrbit.referenceBody.bodyName:" + sourceOrbit.referenceBody.bodyName +
+                    ", sourceOrbit.referenceBody.gravParameter: " + sourceOrbit.referenceBody.gravParameter +
+                    ", sourceOrbit.referenceBody.Radius: " + sourceOrbit.referenceBody.Radius + 
+                    ", targetOrbit.referenceBody.bodyName: " + targetOrbit.referenceBody.bodyName +
+                    ", targetOrbit.altitude: " + targetOrbit.altitude + ",  GravitationalForcesAll(): " + GravitationalForcesAll(targetOrbit)
 
+);
             }
+#if false
             public TargetSuccess(double jumpResourceECmultiplier, double chargeTime, Vessel Source, Vessel targetVessel, Orbit sourceOrbit, Vessel Destination)
             {
                 Init(jumpResourceECmultiplier, chargeTime, Source, targetVessel, sourceOrbit, Destination.orbit);
@@ -264,6 +272,8 @@ namespace ScienceFoundry.FTL
 
                 LogsManager.Info("Target vessel: " + vesselName + ",  neededForce: " + neededForce + ",  successProbability: " + successProbability + ",  optimumAltitude: " + optimumAltitude);
             }
+#endif
+
             public TargetSuccess(double jumpResourceECmultiplier, double chargeTime, Vessel Source, Vessel targetVessel, Orbit sourceOrbit, Orbit targetOrbit)
             {
                 Init(jumpResourceECmultiplier, chargeTime, Source, targetVessel, sourceOrbit, targetOrbit);
@@ -275,7 +285,8 @@ namespace ScienceFoundry.FTL
         {
             if (HighLogic.LoadedSceneIsEditor && EditorLogic.fetch.ship != null)
             {
-                Vessel sourceVessel = gameObject.AddComponent<Vessel>();
+                Vessel sourceVessel = new Vessel();
+
                 sourceVessel.loaded = false;
                 sourceVessel.totalMass = EditorLogic.fetch.ship.GetTotalMass();
 
@@ -285,11 +296,12 @@ namespace ScienceFoundry.FTL
                 testOrigOrbit.referenceBody = FlightGlobals.GetHomeBody();
                 testOrigOrbit.altitude = sourceOrbit;
 
+                Vessel targetVessel = new Vessel();
+
                 for (int i = HighLogic.CurrentGame.flightState.protoVessels.Count - 1; i >= 0; i--)
                 {
                     ProtoVessel protoVessel = HighLogic.CurrentGame.flightState.protoVessels[i];
 
-                    Vessel targetVessel = gameObject.AddComponent<Vessel>();
                     targetVessel.loaded = false;
                     targetVessel.protoVessel = protoVessel;
                     if (VesselHasActiveBeacon(targetVessel))
@@ -316,6 +328,10 @@ namespace ScienceFoundry.FTL
                         yield return null;
                     }
                 }
+                //GameObject.Destroy(targetVessel.gameObject);
+                //GameObject.Destroy(targetVessel);
+                //GameObject.Destroy(sourceVessel.gameObject);
+                //GameObject.Destroy(sourceVessel);
             }
             if (HighLogic.LoadedSceneIsFlight)
             {
@@ -326,9 +342,9 @@ namespace ScienceFoundry.FTL
                     Vessel targetVessel = FlightGlobals.Vessels[i];
                     if (targetVessel != FlightGlobals.ActiveVessel && VesselHasActiveBeacon(targetVessel) && VesselInFlight(targetVessel))
                     {
-                        double targetAltitude = targetVessel.orbit.altitude;
                         Orbit destOrbit = new Orbit(targetVessel.orbit.inclination, targetVessel.orbit.eccentricity, targetVessel.orbit.semiMajorAxis,
                             targetVessel.orbit.LAN, targetVessel.orbit.argumentOfPeriapsis, targetVessel.orbit.meanAnomalyAtEpoch, targetVessel.orbit.epoch, targetVessel.orbit.referenceBody);
+                        double targetAltitude = targetVessel.orbit.altitude + destOrbit.referenceBody.Radius;
                         destOrbit.semiMajorAxis = targetAltitude;
                         destOrbit.altitude = targetAltitude;
 
@@ -402,7 +418,7 @@ namespace ScienceFoundry.FTL
             windowVisible = false;
 
             if (!periodicTargetUpdatesActive)
-                StartCoroutine(nameof(PeriodicTargetUpdates));
+                StartCoroutine(PeriodicTargetUpdates());
 
             GameEvents.onHideUI.Add(OnHideUI);
             GameEvents.onShowUI.Add(OnShowUI);
@@ -544,11 +560,11 @@ namespace ScienceFoundry.FTL
                         color = "yellow",
                     });
 
+                    Vessel v =new  Vessel();
                     for (int i = HighLogic.CurrentGame.flightState.protoVessels.Count - 1; i >= 0; i--)
                     {
                         ProtoVessel vessel = HighLogic.CurrentGame.flightState.protoVessels[i];
 
-                        Vessel v = gameObject.AddComponent<Vessel>();
                         v.loaded = false;
                         v.protoVessel = vessel;
 
@@ -576,8 +592,10 @@ namespace ScienceFoundry.FTL
                                 });
                             }
                         }
-                    }
 
+                    }
+                    //GameObject.Destroy(v.gameObject);
+                    //GameObject.Destroy(v);
                 }
             }
             else
@@ -599,8 +617,6 @@ namespace ScienceFoundry.FTL
 
         public void FixedUpdate()
         {
-            UpdateAnimations();
-
             // If no context menu is open, no point computing or displaying anything.
             if (!(UIPartActionController.Instance.ItemListContains(part, false) || windowVisible))
                 return;
@@ -609,6 +625,7 @@ namespace ScienceFoundry.FTL
 
             if (HighLogic.LoadedSceneIsFlight)
             {
+                UpdateAnimations();
                 try
                 {
                     Events["ToggleSpinning"].guiName = isSpinning ? "Abort" : "Spin";
@@ -749,7 +766,7 @@ namespace ScienceFoundry.FTL
                     AppendLabel("ERROR IN COMPUTATION", "");
                 }
             }
-            base.OnUpdate();
+            //base.OnUpdate();
         }
 
         //------------------------------ CORE METHODS ---------------------------------------------
@@ -995,7 +1012,7 @@ namespace ScienceFoundry.FTL
                     else
                     {
                         // Chance the ship survives, but the crew is subject to an "Event Horizon" situation.
-                        if(rng.Next(10) > 4)
+                        if (rng.Next(10) > 4)
                         {
                             Source.MurderCrew();
                             LogsManager.DisplayMsg("Jump failed. The ship is intact, but where did the crew go???");
@@ -1089,7 +1106,8 @@ namespace ScienceFoundry.FTL
                 }
                 if (e.type == "text")
                 {
-                    GUIStyle s = e.color == "yellow" ? yellow : e.color == "green" ? green : normal;
+                    GUIStyle s = e.color == "yel" +
+                        "low" ? yellow : e.color == "green" ? green : normal;
                     GUILayout.TextField(e.text, s);
                 }
                 if (e.type == "editortext")

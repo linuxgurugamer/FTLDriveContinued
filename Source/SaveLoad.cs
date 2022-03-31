@@ -20,8 +20,8 @@ namespace ScienceFoundry.FTL
         public static Vector2 editor;
         public static Vector2 flight;
 
-        public static bool editorOK;
-        public static bool flightOK;
+        public static bool editorOK = false;
+        public static bool flightOK = false;
 
         static string SafeLoad(string value, float oldvalue)
         {
@@ -90,13 +90,16 @@ namespace ScienceFoundry.FTL
 
         public static void Load()
         {
-            ConfigNode configFile = ConfigNode.Load(FTL_CFG_FILE);
-            if (configFile != null)
+            if (File.Exists(FTL_CFG_FILE))
             {
-                ConfigNode node = configFile.GetNode(FTL_NODE);
+                ConfigNode configFile = ConfigNode.Load(FTL_CFG_FILE);
+                if (configFile != null)
+                {
+                    ConfigNode node = configFile.GetNode(FTL_NODE);
 
-                editorOK = node.TryGetValue("editor", ref editor);
-                flightOK = node.TryGetValue("flight", ref flight);
+                    editorOK = node.TryGetValue("editor", ref editor);
+                    flightOK = node.TryGetValue("flight", ref flight);
+                }
             }
         }
 

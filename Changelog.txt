@@ -155,5 +155,9 @@ unknown
 
 0.2.5
     Thanks to github user @unquietwiki for these:
-        Fix null power issu
+        Fix null power issue
         Changes the "explode" event to do a 50% chance of that, and a 50% chance of doing an "Event Horizon" event (FTL drive kills crew, but not ship). Unknown if lost Kerbals go to Hell
+
+0.2.5.1
+    Fixed exceptions in the Editor
+    Fixed error in Forecast window when in flight (was incorrectly calculating the Optimum height)
