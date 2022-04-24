@@ -1360,7 +1360,7 @@ namespace ScienceFoundry.FTL
             {
                 foreach (PartResource r in p.Resources)
                 {
-                    if (r.resourceName == "ElectricCharge") { r.amount = 0; }
+                    if (r.resourceName == "StoredCharge") { r.amount = 0; }
                 }
             });
         }
