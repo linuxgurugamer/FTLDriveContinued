@@ -161,3 +161,6 @@ unknown
 0.2.5.1
     Fixed exceptions in the Editor
     Fixed error in Forecast window when in flight (was incorrectly calculating the Optimum height)
+
+0.2.5.2 (unreleased)
+    Fixed harmless exception reverting to the editor from flight

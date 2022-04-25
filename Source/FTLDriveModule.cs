@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -258,7 +258,7 @@ namespace ScienceFoundry.FTL
                 LogsManager.Info("ReCalc, Target vessel: " + vesselName + ",  neededForce: " + neededForce + ",  successProbability: " + successProbability + ",  optimumAltitude: " + optimumAltitude);
                 LogsManager.Info("ReCalc, sourceOrbit.referenceBody.bodyName:" + sourceOrbit.referenceBody.bodyName +
                     ", sourceOrbit.referenceBody.gravParameter: " + sourceOrbit.referenceBody.gravParameter +
-                    ", sourceOrbit.referenceBody.Radius: " + sourceOrbit.referenceBody.Radius + 
+                    ", sourceOrbit.referenceBody.Radius: " + sourceOrbit.referenceBody.Radius +
                     ", targetOrbit.referenceBody.bodyName: " + targetOrbit.referenceBody.bodyName +
                     ", targetOrbit.altitude: " + targetOrbit.altitude + ",  GravitationalForcesAll(): " + GravitationalForcesAll(targetOrbit)
 
@@ -560,7 +560,7 @@ namespace ScienceFoundry.FTL
                         color = "yellow",
                     });
 
-                    Vessel v =new  Vessel();
+                    Vessel v = new Vessel();
                     for (int i = HighLogic.CurrentGame.flightState.protoVessels.Count - 1; i >= 0; i--)
                     {
                         ProtoVessel vessel = HighLogic.CurrentGame.flightState.protoVessels[i];
