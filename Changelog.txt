@@ -162,5 +162,7 @@ unknown
     Fixed exceptions in the Editor
     Fixed error in Forecast window when in flight (was incorrectly calculating the Optimum height)
 
-0.2.5.2 (unreleased)
+0.2.5.2
     Fixed harmless exception reverting to the editor from flight
+    Thanks to github user @epower53 for this:
+        Fixed the non-EC resource consumption on jump execution. Now only EC will be drained, while other resources are left as-is.
