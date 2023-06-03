@@ -285,7 +285,7 @@ namespace ScienceFoundry.FTL
         {
             if (HighLogic.LoadedSceneIsEditor && EditorLogic.fetch.ship != null)
             {
-                Vessel sourceVessel = new Vessel();
+                Vessel sourceVessel = gameObject.AddComponent<Vessel>();
 
                 sourceVessel.loaded = false;
                 sourceVessel.totalMass = EditorLogic.fetch.ship.GetTotalMass();
@@ -296,7 +296,7 @@ namespace ScienceFoundry.FTL
                 testOrigOrbit.referenceBody = FlightGlobals.GetHomeBody();
                 testOrigOrbit.altitude = sourceOrbit;
 
-                Vessel targetVessel = new Vessel();
+                Vessel targetVessel = gameObject.AddComponent<Vessel>();
 
                 for (int i = HighLogic.CurrentGame.flightState.protoVessels.Count - 1; i >= 0; i--)
                 {
@@ -560,7 +560,7 @@ namespace ScienceFoundry.FTL
                         color = "yellow",
                     });
 
-                    Vessel v = new Vessel();
+                    Vessel v = gameObject.AddComponent<Vessel>();
                     for (int i = HighLogic.CurrentGame.flightState.protoVessels.Count - 1; i >= 0; i--)
                     {
                         ProtoVessel vessel = HighLogic.CurrentGame.flightState.protoVessels[i];
@@ -1332,7 +1332,7 @@ namespace ScienceFoundry.FTL
         }
 
         /// <summary>
-        /// Reset any NaN power to 0
+        /// Reset any NaN power to 1
         /// </summary>
         internal static void resetPower(Vessel v)
         {
@@ -1347,7 +1347,7 @@ namespace ScienceFoundry.FTL
             {
                 foreach (PartResource r in p.Resources)
                 {
-                    if (r.resourceName == "ElectricCharge") { r.amount = 0; }
+                    if (r.resourceName == "ElectricCharge") { r.amount = 1; }
                 }
             });
 
@@ -1360,7 +1360,7 @@ namespace ScienceFoundry.FTL
             {
                 foreach (PartResource r in p.Resources)
                 {
-                    if (r.resourceName == "StoredCharge") { r.amount = 0; }
+                    if (r.resourceName == "StoredCharge") { r.amount = 1; }
                 }
             });
         }
