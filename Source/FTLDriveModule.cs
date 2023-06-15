@@ -1332,7 +1332,7 @@ namespace ScienceFoundry.FTL
         }
 
         /// <summary>
-        /// Reset any NaN power to 0
+        /// Reset any NaN power to 1
         /// </summary>
         internal static void resetPower(Vessel v)
         {
@@ -1347,7 +1347,7 @@ namespace ScienceFoundry.FTL
             {
                 foreach (PartResource r in p.Resources)
                 {
-                    if (r.resourceName == "ElectricCharge") { r.amount = 0; }
+                    if (r.resourceName == "ElectricCharge") { r.amount = 1; }
                 }
             });
 
@@ -1360,7 +1360,7 @@ namespace ScienceFoundry.FTL
             {
                 foreach (PartResource r in p.Resources)
                 {
-                    if (r.resourceName == "StoredCharge") { r.amount = 0; }
+                    if (r.resourceName == "StoredCharge") { r.amount = 1; }
                 }
             });
         }

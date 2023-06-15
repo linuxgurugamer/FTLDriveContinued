@@ -28,8 +28,15 @@ namespace ScienceFoundry.FTL
         public static void Rendezvous(this Vessel self, Vessel destination, double leadTime = 5d)
         {
             var o = destination.orbit;
+
+            // Randomize distance from target, to avoid colliding with loitering vessels from previous jumps.
+            // TODO: is it even possible to have true collision avoidance?
+            System.Random rng = new System.Random();
+            leadTime = o.referenceBody == Planetarium.fetch.Sun ? rng.Next(1, 3) : rng.Next(5, 10);
+
+            // Arive at destination
             var newOrbit = CreateOrbit(o.inclination, o.eccentricity, o.semiMajorAxis, o.LAN, o.argumentOfPeriapsis, o.meanAnomalyAtEpoch,
-                                       o.epoch - leadTime, o.referenceBody);
+            o.epoch - leadTime, o.referenceBody);
 
             self.SetOrbit(newOrbit);
         }
