@@ -171,4 +171,7 @@ unknown
     Fixed the node size of the large ftl drive
     Thanks to github user unquietwiki for these two fixes/changes
         "Rendevous" sets a slightly random exit point, to avoid colliding with a vehicle that might already be at the exit point.
-        Set the NaN power to 1, to avoid antimatter failure or other mod issues., 
+        Set the NaN power to 1, to avoid antimatter failure or other mod issues.
+
+0.2.5.4
+    Updated version file to use github for new version info
